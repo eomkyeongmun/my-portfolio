@@ -12,10 +12,10 @@ export function Header() {
   const [pdfOpen, setPdfOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const closeDropdown = useCallback(() => setPdfOpen(false), []);
+
   const isPrint = pathname.startsWith("/portfolio/print");
   if (isPrint) return null;
-
-  const closeDropdown = useCallback(() => setPdfOpen(false), []);
 
   const handleDropdownKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
