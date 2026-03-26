@@ -22,20 +22,21 @@ export async function GET(
   try {
     const page = await browser.newPage();
 
-    await page.goto(printUrl, { waitUntil: "networkidle0" });
+    await page.goto(printUrl, { waitUntil: "networkidle0", timeout: 30000 });
 
-    // 웹 폰트 로딩 완료 대기
-    await page.evaluate(() => document.fonts.ready);
+    // 웹 폰트 로딩 완료 대기 (최대 10초)
+    await page.evaluate(() =>
+      Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 10000)),
+      ])
+    );
 
     const pdfUint8 = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: {
-        top: "15mm",
-        right: "15mm",
-        bottom: "15mm",
-        left: "15mm",
-      },
+      // CSS px-[14mm] py-[16mm]이 내부 여백을 처리하므로 Puppeteer 마진은 0으로
+      margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
 
     const pdfBuffer = Buffer.from(pdfUint8);

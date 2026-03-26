@@ -12,7 +12,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const project = projects.find((p) => p.category === slug);
   if (!project) return {};
-  return { title: `${project.title} — ${profile.name}` };
+  return {
+    title: `${project.title} — ${profile.name}`,
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function PrintPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -79,9 +82,9 @@ export default async function PrintPage({ params }: { params: Promise<{ slug: st
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-neutral-200">
-                <th className="text-left py-2 pr-4 font-semibold text-neutral-600 w-32">기술</th>
-                <th className="text-left py-2 pr-4 font-semibold text-neutral-600 w-44">역할</th>
-                <th className="text-left py-2 font-semibold text-neutral-600">선택 이유</th>
+                <th scope="col" className="text-left py-2 pr-4 font-semibold text-neutral-600 w-32">기술</th>
+                <th scope="col" className="text-left py-2 pr-4 font-semibold text-neutral-600 w-44">역할</th>
+                <th scope="col" className="text-left py-2 font-semibold text-neutral-600">선택 이유</th>
               </tr>
             </thead>
             <tbody>
