@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# my-portfolio
 
-## Getting Started
+개인 포트폴리오 웹사이트. 웹 열람용 페이지와 PDF 다운로드 기능을 함께 제공합니다.
 
-First, run the development server:
+## 기술 스택
+
+| 분류 | 기술 |
+|------|------|
+| 프레임워크 | Next.js 16 (App Router) |
+| UI | React 19, TypeScript |
+| 스타일 | Tailwind CSS v4 (CSS-first config) |
+| 폰트 | Geist (영문), Noto Sans KR (한글) |
+| PDF 생성 | Puppeteer |
+
+## 프로젝트 구조
+
+```
+src/
+  app/
+    layout.tsx          # 루트 레이아웃 (폰트, 메타데이터)
+    page.tsx            # 홈 페이지
+    portfolio/
+      page.tsx          # 포트폴리오 웹 열람 페이지
+      print/
+        page.tsx        # PDF 생성 기준 페이지 (/portfolio/print)
+    api/                # API 라우트
+  components/           # 재사용 UI 컴포넌트
+  data/                 # 포트폴리오 데이터 (TypeScript 상수)
+```
+
+## 실행 방법
+
+### 의존성 설치
+
+```bash
+npm install
+```
+
+### 개발 서버 실행
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 프로덕션 빌드
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+### 린트
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## PDF Export
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+포트폴리오를 PDF로 내보내려면:
 
-## Deploy on Vercel
+1. 개발 서버 또는 프로덕션 서버를 실행합니다.
+2. `/portfolio/print` 페이지가 PDF 렌더링 기준 페이지입니다.
+3. API 라우트(`/api/...`)를 통해 Puppeteer가 해당 페이지를 headless Chrome으로 렌더링해 PDF를 생성합니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+한글 텍스트가 깨지지 않도록 Noto Sans KR 웹폰트 로딩 완료 후 캡처합니다.
