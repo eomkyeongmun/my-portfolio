@@ -1,0 +1,20 @@
+# Terraform state — 절대 커밋하지 말 것 (Secret Access Key 포함)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# 민감한 변수 파일
+*.tfvars
+*.tfvars.json
+!example.tfvars
+
+# 크래시 로그
+crash.log
+crash.*.log
+
+# 생성된 파일
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
