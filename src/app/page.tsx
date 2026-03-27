@@ -16,16 +16,16 @@ const categoryColor: Record<string, string> = {
 };
 
 const skillCategoryColor: Record<string, string> = {
-  Backend:        "bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+  Backend: "bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
   Infrastructure: "bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
   "DevOps/Tools": "bg-cyan-200 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300",
-  Monitoring:     "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
+  Monitoring: "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
 };
 
 const projectCategoryColor: Record<string, string> = {
-  backend:        "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  backend: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   infrastructure: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  devops:         "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
+  devops: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
 };
 
 
@@ -91,7 +91,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-emerald-400 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
             >
               <svg aria-hidden="true" className="w-4 h-4" viewBox="0 0 192 192" fill="currentColor">
-                <path d="M96 16C51.8 16 16 51.8 16 96s35.8 80 80 80 80-35.8 80-80S140.2 16 96 16zm-9.5 116.8L52 96l11.3-11.3 23.2 23.2 42.2-42.2L140 77l-53.5 55.8z"/>
+                <path d="M96 16C51.8 16 16 51.8 16 96s35.8 80 80 80 80-35.8 80-80S140.2 16 96 16zm-9.5 116.8L52 96l11.3-11.3 23.2 23.2 42.2-42.2L140 77l-53.5 55.8z" />
               </svg>
               Velog
             </a>
