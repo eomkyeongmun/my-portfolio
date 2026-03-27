@@ -1,0 +1,9 @@
+{
+  "name": "portfolio-pdf-lambda",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@sparticuz/chromium": "^131.0.1",
+    "puppeteer-core": "^24.0.0"
+  }
+}

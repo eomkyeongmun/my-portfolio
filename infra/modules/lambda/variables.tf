@@ -23,3 +23,8 @@ variable "lambda_image_uri" {
   type        = string
   default     = "PLACEHOLDER"
 }
+
+variable "site_url" {
+  description = "CloudFront 도메인 (https:// 제외, 예: d1234abcd.cloudfront.net) — Lambda SITE_URL 환경 변수에 사용"
+  type        = string
+}

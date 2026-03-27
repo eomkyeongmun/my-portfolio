@@ -23,6 +23,11 @@ output "ecr_repository_url" {
   value       = module.lambda.ecr_repository_url
 }
 
+output "lambda_function_name" {
+  description = "Lambda 함수 이름 (GitHub Actions에서 이미지 업데이트 시 사용)"
+  value       = module.lambda.lambda_function_name
+}
+
 output "github_actions_access_key_id" {
   description = "GitHub Actions 배포용 IAM Access Key ID"
   value       = module.iam.github_actions_access_key_id

@@ -14,7 +14,11 @@ export function PdfDownloadButton({ slug, projectTitle, variant = "default" }: P
   const handleDownload = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/pdf/${slug}`);
+      const apiUrl = process.env.NEXT_PUBLIC_PDF_API_URL;
+      if (!apiUrl) {
+        throw new Error("PDF API URL이 설정되지 않았습니다.");
+      }
+      const res = await fetch(`${apiUrl}/api/pdf/${slug}`);
       if (!res.ok) throw new Error("PDF 생성에 실패했습니다.");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);

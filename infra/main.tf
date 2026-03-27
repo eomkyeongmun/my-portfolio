@@ -63,6 +63,7 @@ module "lambda" {
   lambda_role_arn  = module.iam.lambda_role_arn
   s3_bucket_name   = module.s3.bucket_id
   lambda_image_uri = var.lambda_image_uri
+  site_url         = module.cloudfront.distribution_domain_name
 }
 
 module "api_gateway" {
