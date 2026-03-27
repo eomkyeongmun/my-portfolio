@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { profile } from "@/data/profile";
 import { skills } from "@/data/skills";
 import { projects } from "@/data/projects";
@@ -32,7 +33,7 @@ const projectCategoryColor: Record<string, string> = {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 mb-6">
-      <span className="font-mono text-neutral-400 dark:text-neutral-500 text-sm select-none">//</span>
+      <span className="font-mono text-neutral-400 dark:text-neutral-500 text-sm select-none">{"// "}</span>
       <span className="font-mono text-xs font-semibold tracking-widest uppercase text-neutral-500 dark:text-neutral-400">
         {children}
       </span>
@@ -240,11 +241,12 @@ export default function Home() {
               className="group rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors bg-neutral-50 dark:bg-neutral-900/50 overflow-hidden block"
             >
               {project.architecture.diagram && (
-                <div className="w-full aspect-video bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                  <img
+                <div className="relative w-full aspect-video bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                  <Image
                     src={project.architecture.diagram}
                     alt={`${project.title} 아키텍처`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               )}
