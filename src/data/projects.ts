@@ -12,7 +12,7 @@ export interface ProblemSolving {
 }
 
 export interface Project {
-  category: "backend" | "infrastructure";
+  category: "backend" | "infrastructure" | "devops";
   title: string;
   period: string; // 예: "2023.01 ~ 2023.06"
   overview: {
@@ -42,75 +42,229 @@ export interface Project {
 export const projects: Project[] = [
   {
     category: "backend",
-    title: "백엔드 프로젝트 이름",
-    period: "YYYY.MM ~ YYYY.MM",
+    title: "Newgnal Backend",
+    period: "2025.05 ~ 2025.07",
     overview: {
-      description: "서비스 또는 시스템에 대한 1~2줄 요약 설명",
-      role: "팀 내에서 내가 주로 담당한 역할",
+      description:
+        "뉴스 데이터를 수집·분석하고 모바일 앱에 제공하는 Spring Boot 기반 백엔드 시스템입니다. 인증, 게시글/댓글, 좋아요, 신고, 크롤링 및 분석 서비스 연동까지 담당했습니다.",
+      role: "게시글, 댓글, 대댓글, 좋아요, 신고 기능의 API 설계 및 구현을 담당했습니다. 인증 구조 연동, 응답 DTO 개선, 예외 처리, Docker 기반 실행 환경 이해와 배포 구조 파악에도 참여했습니다.",
     },
     architecture: {
-      diagram: "/images/projects/backend-architecture.png",
-      description: "서비스의 전체적인 구성도 설명",
-      reasoning: "이러한 아키텍처 구조를 설계하고 채택한 명확한 이유 (예: 단기간에 몰리는 트래픽을 비동기로 처리하기 위해 MQ 채택)", // 모든 선택에는 이유가 있어야 한다
+      diagram: "/images/projects/newgnal-architecture.png",
+      description:
+        "React Native 기반 모바일 앱의 요청을 Spring Boot 백엔드가 처리하고, OAuth2 + JWT + Spring Security 기반 인증, Redis/MySQL 데이터 처리, 뉴스 크롤링 스케줄러와 분석 서비스 연동 구조로 구성했습니다.",
+      reasoning:
+        "인증, API, 스케줄링을 Spring Boot 중심으로 통합해 개발 생산성과 유지보수성을 확보했습니다. Redis와 MySQL을 분리해 빠른 접근과 영속 데이터 저장 역할을 분담했고, 크롤링과 분석 기능을 분리해 기능 확장성과 책임 분리를 확보했습니다. Docker Compose를 통해 실행 환경을 통일하고 배포 재현성을 확보했습니다.",
     },
     techStack: [
       {
-        name: "기술명 (예: Redis)",
-        role: "프로젝트 내에서의 역할 (예: 세션 클러스터링 및 랭킹 데이터 캐싱)",
-        reason: "이 기술을 선택한 이유 (예: RDBMS로 인한 I/O 병목을 해결하고 데이터 응답 속도를 높이기 위함)", // 모든 선택에는 이유가 있어야 한다
+        name: "Spring Boot",
+        role: "REST API 및 전체 백엔드 애플리케이션 구현",
+        reason:
+          "인증, 데이터 접근, 예외 처리, 구조화된 서버 개발에 적합하며 팀 전체가 익숙한 생태계였기 때문에 선택했습니다.",
+      },
+      {
+        name: "Spring Security / OAuth2 / JWT",
+        role: "로그인 및 인증/인가 처리",
+        reason:
+          "토큰 기반 인증 구조를 안정적으로 구현할 수 있고, Spring Boot와의 통합이 자연스러워 선택했습니다.",
+      },
+      {
+        name: "JPA / MySQL",
+        role: "게시글, 댓글, 신고 등 핵심 데이터 저장",
+        reason:
+          "관계형 데이터 모델링과 CRUD 개발에 적합하고, 데이터 간 연관관계를 명확하게 표현할 수 있어 선택했습니다.",
+      },
+      {
+        name: "Redis",
+        role: "빠른 데이터 접근 보조",
+        reason:
+          "DB 부하를 줄이고 응답 성능을 보완하기 위해 사용했습니다. 인메모리 특성상 자주 조회되는 데이터 캐싱에 적합했습니다.",
+      },
+      {
+        name: "Selenium + Scheduler",
+        role: "뉴스 크롤링 자동화",
+        reason:
+          "주기적인 데이터 수집 작업을 사용자 요청과 분리하기 위해 스케줄러 기반으로 구성했습니다.",
+      },
+      {
+        name: "Docker Compose",
+        role: "개발/배포 실행 환경 통일",
+        reason:
+          "팀원 간 환경 차이로 인한 오류를 줄이고 재현 가능한 실행 환경을 만들기 위해 사용했습니다.",
+      },
+      {
+        name: "GitHub Actions",
+        role: "빌드 및 배포 자동화",
+        reason:
+          "수동 배포를 줄이고 반복 가능한 배포 흐름을 만들기 위해 도입했습니다.",
       },
     ],
     problemSolving: [
       {
-        issue: "겪은 이슈 (예: 선착순 이벤트 시 동시성 이슈로 인한 재고 초과 차감)",
-        analysis: "분석 과정 (예: 애플리케이션 로그 및 메트릭 확인 결과 DB 락 경합 및 스레드 풀 고갈 확인)",
-        solution: "해결 방법 및 선택 이유 (예: Redis 분산 락, DB 비관적 락 등의 대안 중 X를 선택. 그 이유는 Y이기 때문)", // 모든 선택에는 이유가 있어야 한다
-        result: "결과 (예: 동시 요청 1만 건에서도 데이터 무결성 보장 및 응답속도 Z% 향상 달성)",
+        issue: "팀원별 개발환경 차이로 인해 같은 코드도 실행 결과가 다르게 나오는 문제가 자주 발생했습니다.",
+        analysis:
+          "문제의 원인은 기능 코드 자체보다 Java 버전, 의존성, 실행 방식 차이 등 환경 불일치에 있었습니다.",
+        solution:
+          "Docker를 단순 배포 도구가 아니라 개발환경을 표준화하는 도구로 보고 실행 환경을 통일하는 방향으로 접근했습니다. Docker Compose로 전체 스택의 실행 환경을 코드로 정의해 팀 전체가 동일한 환경에서 개발하도록 기준을 세웠습니다.",
+        result:
+          "환경 차이로 인한 오류를 줄이는 기준을 세울 수 있었고, 협업에서 실행 환경 통일의 중요성을 체감했습니다.",
       },
     ],
     retrospective: {
-      improvements: "프로젝트를 통해 성능, 안정성, 비즈니스 측면에서 개선된 부분",
-      regrets: "오버엔지니어링이었거나, 시간 관계상 임시 방편으로 처리한 아쉬운 부분",
-      futureWork: "이 시스템의 규모가 10배 커진다면 추가로 고려해야 할 설계 요소",
+      improvements:
+        "게시글, 댓글, 좋아요, 신고 등 커뮤니티 핵심 기능을 안정적으로 구현했고, 뉴스 크롤링 및 분석 서비스 연동 구조를 통해 단순 CRUD를 넘어선 백엔드 아키텍처를 경험했습니다.",
+      regrets:
+        "초반에는 Docker를 배포용으로만 생각해 개발환경 통일에 적극적으로 활용하지 못했고, 그 결과 환경 차이로 인한 오류 대응에 시간이 많이 들었습니다.",
+      futureWork:
+        "서비스 규모가 커진다면 크롤링, 분석, API 서버를 더 분리하고, 비동기 처리, 캐시 전략 고도화, 모니터링 체계 강화까지 확장할 계획입니다.",
     },
     links: {
-      github: "https://github.com/...",
-      demo: "https://...",
-      blog: "https://...",
+      github: "https://github.com/eomkyeongmun/Newgnal-Backend",
+      demo: "https://...", // PDF 링크
     },
   },
   {
     category: "infrastructure",
-    title: "인프라 구축 프로젝트 이름",
-    period: "YYYY.MM ~ YYYY.MM",
+    title: "EKS 기반 대규모 트래픽 대응 및 Central VPC 중앙관제 인프라",
+    period: "2026.02 ~ 2026.03",
     overview: {
-      description: "어떤 목적의 인프라 시스템인지 요약 설명",
-      role: "내 역할 (예: 인프라 프로비저닝 및 CI/CD 파이프라인 구축)",
+      description:
+        "대규모 트래픽 대응을 목표로, EKS 기반 애플리케이션 플랫폼과 Central VPC 기반 중앙 관제형 네트워크 구조를 함께 설계·구축한 프로젝트입니다. 멀티 AZ, 오토스케일링, 중앙 모니터링, DNS 보안 관측, DR 구조까지 포함한 운영형 인프라를 설계했으며, QA 환경에서 약 2,000 RPS / 총 120,000 요청을 처리하며 구조의 유효성을 검증했습니다.",
+      role: "팀장으로서 전체 일정과 방향을 조율했고, 기술적으로는 쿠버네티스 중심 아키텍처 설계와 EKS 학습·구축을 주도했습니다. 일부 모니터링 및 알림 체계 구성에도 참여했습니다.",
     },
     architecture: {
-      diagram: "/images/projects/infra-architecture.png",
-      description: "인프라 토폴로지, 네트워크, 보안 정책 등 구성 설명",
-      reasoning: "이러한 아키텍처로 설계한 이유 (예: 단일 장애점(SPOF)을 제거하고 고가용성을 확보하기 위한 Multi-AZ 구성 채택)", // 모든 선택에는 이유가 있어야 한다
+      diagram: "/images/projects/eks-architecture.png",
+      description:
+        "전체 구조는 Prod / QA / Dev / DR / Central VPC로 나뉩니다. Prod와 QA는 공통적으로 CloudFront → ALB(Ingress) → Kubernetes Service → Pod 흐름의 EKS 기반 구조를 사용했고, 가용성을 위해 멀티 AZ로 구성했습니다. 데이터 계층은 Aurora DB + Reader Endpoint + RDS Proxy로 설계해 읽기 트래픽 분산과 커넥션 안정성을 확보했습니다. Prod는 On-Demand + Spot NodePool 분리 운영, QA는 비용 절감을 위해 Spot 중심으로 운영했습니다. Central VPC에는 GitLab 서버와 모니터링 스택 서버를 두어 여러 환경을 한 곳에서 관리하는 중앙 관제형 구조를 만들었고, DR은 Pilot Light 방식으로 설계해 평시 비용을 줄이고 필요 시 복구 가능한 형태로 구성했습니다. DNS 질의 흐름은 Route 53 Resolver → DNS Firewall(ALERT) → Query Logging → CloudWatch Logs → Metric Filter → Alarm → SNS → Lambda → Slack Alert로 연결해 외부 도메인 접근을 추적할 수 있도록 구성했습니다.",
+      reasoning:
+        "EKS를 선택한 이유는 단순 배포 편의성보다 확장성과 생태계 활용성 때문이었습니다. KEDA·Karpenter·IRSA 등 오픈소스와의 연계성이 뛰어났고, Helm Chart로 배포와 운영 구성을 일관되게 관리할 수 있었습니다. Central VPC는 공통 서비스를 중앙화해 운영 복잡도를 낮추고, 여러 VPC의 상태·로그·알람을 한 곳에서 모아 가시성과 장애 대응 속도를 높이는 구조로 설계했습니다. 즉 '네트워크를 나눈 설계'가 아니라 운영·보안·관측 포인트를 줄인 설계입니다.",
     },
     techStack: [
       {
-        name: "기술명 (예: Terraform)",
-        role: "역할 (예: 클라우드 리소스 생성 및 상태 관리)",
-        reason: "이 기술을 선택한 이유 (예: UI 클리닝 방식의 휴먼 에러를 방지하고 인프라 버전을 체계적으로 관리하기 위해)", // 모든 선택에는 이유가 있어야 한다
+        name: "Terraform",
+        role: "인프라 리소스 프로비저닝 및 DR 재현성 확보",
+        reason:
+          "인프라를 코드로 관리해 수동 구성 오류를 줄이고, DR에서도 Pilot Light 구조를 재현 가능한 형태로 가져가기 위해 선택했습니다.",
+      },
+      {
+        name: "AWS EKS",
+        role: "애플리케이션 실행 및 오케스트레이션 플랫폼",
+        reason:
+          "트래픽 변동 대응, 오토스케일링, 모니터링, GitOps, 오픈소스 연동 등 운영 요구사항이 많은 구조에 적합했고, KEDA·Karpenter·IRSA 등과의 연계성이 뛰어났기 때문입니다.",
+      },
+      {
+        name: "KEDA",
+        role: "요청량 기반 Pod 오토스케일링",
+        reason:
+          "CPU/메모리 기준보다 실제 요청량 기준 확장이 더 적합하다고 판단해, Prometheus 메트릭을 기반으로 Pod당 평균 RPS를 계산해 확장하도록 설계했습니다. 최소 45개, 최대 110개까지 확장 가능하게 구성했습니다.",
+      },
+      {
+        name: "Karpenter",
+        role: "노드 레벨 오토스케일링",
+        reason:
+          "Pod 수만 늘려서는 충분하지 않고, 실제 스케줄링 가능한 노드가 함께 늘어나야 했기 때문에 사용했습니다. Pending Pod 감지 후 필요한 노드를 자동으로 생성하는 구조를 설계했습니다.",
+      },
+      {
+        name: "ArgoCD / GitOps",
+        role: "선언형 배포 상태 관리",
+        reason:
+          "Git 기준으로 배포 상태를 일관되게 유지하고, 운영 변경 이력을 명확하게 관리하기 위해 도입했습니다.",
+      },
+      {
+        name: "Helm",
+        role: "애플리케이션 및 운영 스택 배포 표준화",
+        reason:
+          "앱 배포, 모니터링 스택, 오토스케일링 관련 설정을 일관되게 관리하기 위해 사용했습니다.",
+      },
+      {
+        name: "Prometheus",
+        role: "메트릭 수집 및 스케일링 판단 기준 제공",
+        reason:
+          "/actuator/prometheus 메트릭을 수집해 KEDA가 요청량 기반으로 스케일링 결정을 내릴 수 있게 만들기 위해 사용했습니다.",
+      },
+      {
+        name: "IRSA",
+        role: "Pod 단위 AWS 권한 분리",
+        reason:
+          "노드 전체 IAM Role에 권한을 몰아주지 않고, ServiceAccount 단위로 필요한 권한만 부여해 보안 범위를 최소화하기 위해 적용했습니다.",
+      },
+      {
+        name: "Route 53 Resolver / DNS Firewall / CloudWatch / SNS / Lambda",
+        role: "DNS 보안 관측 및 알림 자동화",
+        reason:
+          "Central VPC 내부 서버의 외부 도메인 접근을 추적하고, 위험 도메인 탐지 이벤트를 Slack으로 빠르게 전달하기 위해 구성했습니다.",
       },
     ],
     problemSolving: [
       {
-        issue: "겪은 이슈 (예: 컨테이너 롤링 배포 도중 간헐적인 다운타임 발생 및 요청 실패)",
-        analysis: "분석 과정 (예: 로드밸런서의 상태 검사 주기와 새 컨테이너의 웜업 시간 차이로 인해 덜 준비된 컨테이너에 트래픽이 인입됨을 확인)",
-        solution: "해결 방법 및 선택 이유 (예: 앱 내 Graceful Shutdown 적용 및 대상 그룹 헬스체크 설정을 X로 변경한 이유)", // 모든 선택에는 이유가 있어야 한다
-        result: "결과 (예: 무중단 배포 100% 달성 및 배포 중 5xx 에러율 0% 기록)",
+        issue: "대규모 부하 상황에서 준비되지 않은 Pod에 트래픽이 들어갈 위험, 요청량에 비해 느린 확장, Pod는 늘어나지만 노드가 부족해 Pending이 발생할 위험이 함께 존재했습니다. 실제로 노드 Join 실패, Pending Pod, MaxPods 한계, ALB 헬스체크 경로 불일치 같은 문제가 반복적으로 나타났습니다.",
+        analysis:
+          "문제를 레이어별로 분리해 분석했습니다. Spring Boot는 부팅 직후 바로 요청을 받으면 안 되기 때문에 readiness 기준이 중요했고, HPA만으로는 실제 요청량을 충분히 반영하기 어려웠습니다. 또한 Private Subnet 라우팅 오류로 워커 노드가 EKS API와 통신하지 못해 Join에 실패했고, DNS 설정 오류로 Node가 NotReady가 되었으며, MaxPods 한계로 Pending Pod가 발생하는 문제를 확인했습니다.",
+        solution:
+          "단일 기술이 아닌 여러 계층을 맞물리게 설계했습니다. startup/readiness/liveness probe를 분리하고 ALB health check 경로를 readiness와 동일하게 맞췄습니다. CPU 기준 대신 Prometheus 메트릭 기반 KEDA로 Pod당 평균 RPS를 기준으로 스케일링하도록 했고, 최소 45개 Pod를 선기동해 초기 수용량을 확보했습니다. Karpenter를 함께 적용해 Pending Pod 발생 시 새 노드가 자동으로 추가되도록 했으며, IRSA로 Pod 단위 권한을 분리했습니다.",
+        result:
+          "QA 환경에서 약 2,000 RPS를 60초 동안 유지하며 총 120,000 요청을 처리했습니다. 초기 45개 Pod 확보, readiness/ALB health check 기준 통일, Prometheus 기반 KEDA 확장, Karpenter 기반 노드 확장, GitOps 기반 운영 일관성이 함께 작동한 결과였습니다.",
       },
     ],
     retrospective: {
-      improvements: "자동화, 보안 강화, 비용 절감 등 인프라 측면에서 달성한 가치",
-      regrets: "프로비저닝을 자동화하지 못한 일부 수동 영역 등 아쉬운 점",
-      futureWork: "추후 보안성 향상이나 스케일 아웃을 위해 도입을 고려하는 도구",
+      improvements:
+        "EKS 기반 대규모 트래픽 대응 구조를 실제 요청으로 검증했습니다. Central VPC를 통해 GitLab·모니터링·보안 관측을 중앙화해 운영 복잡도를 낮추고 가시성을 높였으며, DNS Firewall + Query Logging + Slack Alert를 통해 네트워크 보안 이벤트를 탐지하고 즉시 인지할 수 있는 흐름을 만들었습니다.",
+      regrets:
+        "부하 테스트 과정에서 리소스 스펙을 충분히 정교하게 잡지 못해 예산을 초과했습니다. 또한 Karpenter를 완전한 GitOps 흐름 안에 넣지 못했고, DNS Firewall도 ALERT 모드 위주로만 사용해 차단 정책까지는 확장하지 못했습니다.",
+      futureWork:
+        "Karpenter까지 포함한 완전한 GitOps화, Central VPC 보안 정책의 BLOCK/탐지 규칙 고도화, 부하 테스트 기반 비용 예측 정교화를 다음 단계로 진행할 계획입니다.",
+    },
+    links: {
+      github: "https://github.com/...",
+      demo: "https://...", // PDF 링크
+      blog: "https://...",
+    },
+  },
+  {
+    category: "devops",
+    title: "개인 포트폴리오 사이트 구축 (진행 중)",
+    period: "2026.03 ~ 현재",
+    overview: {
+      description:
+        "Next.js 기반 개인 포트폴리오 웹사이트. 웹 열람용 페이지와 PDF 다운로드를 함께 제공하며, AWS 인프라 위에 직접 배포·운영합니다.",
+      role: "프론트엔드 개발부터 AWS 인프라 설계·구축까지 전 과정 단독 담당",
+    },
+    architecture: {
+      diagram: "/images/projects/portfolio-architecture.png",
+      description:
+        "Next.js 앱을 S3 + CloudFront로 정적 배포하고, PDF 생성 요청은 API Gateway → Lambda(Puppeteer) 구조로 처리합니다. WAF를 CloudFront 앞단에 붙여 보안을 강화했습니다.",
+      reasoning:
+        "정적 사이트에 서버가 필요한 PDF 생성 기능만 Lambda로 분리해 운영 비용을 최소화했습니다. CloudFront + S3 조합으로 글로벌 CDN을 무서버로 구성했습니다.",
+    },
+    techStack: [
+      {
+        name: "Next.js / React / TypeScript",
+        role: "포트폴리오 웹 페이지 구현",
+        reason: "App Router 기반의 정적 생성과 Tailwind CSS와의 궁합이 좋아 선택했습니다.",
+      },
+      {
+        name: "AWS S3 + CloudFront + WAF",
+        role: "정적 파일 배포 및 CDN, 보안",
+        reason: "서버 없이 글로벌 CDN을 구성하고 WAF로 기본 보안을 확보하기 위해 선택했습니다.",
+      },
+      {
+        name: "AWS Lambda + Puppeteer",
+        role: "PDF 생성 서버리스 함수",
+        reason:
+          "PDF 생성은 요청이 드문 작업이라 상시 서버 대신 Lambda로 분리해 비용을 최소화했습니다.",
+      },
+      {
+        name: "Terraform",
+        role: "인프라 전체 코드 관리",
+        reason: "콘솔 수동 작업 없이 인프라를 재현 가능하게 관리하기 위해 사용했습니다.",
+      },
+    ],
+    problemSolving: [],
+    retrospective: {
+      improvements: "추후 작성 예정",
+      regrets: "추후 작성 예정",
+      futureWork: "추후 작성 예정",
     },
     links: {
       github: "https://github.com/...",

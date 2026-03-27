@@ -122,7 +122,7 @@ export default function Home() {
         <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
           Projects
         </h2>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           {projects.map((project) => (
             <div
               key={project.category}
@@ -165,7 +165,7 @@ export default function Home() {
         <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
           Highlights
         </h2>
-        <div className="space-y-6">
+        <div className="grid sm:grid-cols-3 gap-4">
           {highlights.map((h, i) => (
             <div
               key={i}
