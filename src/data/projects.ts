@@ -19,6 +19,7 @@ export interface Project {
     description: string;
     role: string;
   };
+  thumbnail?: string; // 홈 카드 썸네일 (없으면 architecture.diagram 사용)
   architecture: {
     diagram: string; // 이미지 경로
     description: string; // 시스템의 전체적인 동작 플로우 및 구성 요소 설명
@@ -44,6 +45,7 @@ export const projects: Project[] = [
     category: "backend",
     title: "Newgnal Backend",
     period: "2025.05 ~ 2025.07",
+    thumbnail: "/images/tave_signal.png",
     overview: {
       description:
         "뉴스 데이터를 수집·분석하고 모바일 앱에 제공하는 Spring Boot 기반 백엔드 시스템입니다. 인증, 게시글/댓글, 좋아요, 신고, 크롤링 및 분석 서비스 연동까지 담당했습니다.",

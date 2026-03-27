@@ -240,11 +240,11 @@ export default function Home() {
               href={`/projects/${project.category}`}
               className="group rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors bg-neutral-50 dark:bg-neutral-900/50 overflow-hidden block"
             >
-              {project.architecture.diagram && (
+              {(project.thumbnail ?? project.architecture.diagram) && (
                 <div className="relative w-full aspect-video bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                   <Image
-                    src={project.architecture.diagram}
-                    alt={`${project.title} 아키텍처`}
+                    src={project.thumbnail ?? project.architecture.diagram}
+                    alt={`${project.title} 썸네일`}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
