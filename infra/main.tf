@@ -92,9 +92,8 @@ module "cloudfront" {
   s3_bucket_arn                  = module.s3.bucket_arn
   s3_bucket_regional_domain_name = module.s3.bucket_regional_domain_name
   web_acl_arn                    = module.waf.web_acl_arn
-  # domain_name / acm_certificate_arn 은 인증서 검증 완료 후 활성화
-  # domain_name         = var.domain_name
-  # acm_certificate_arn = module.acm.certificate_arn
+  domain_name         = var.domain_name
+  acm_certificate_arn = module.acm.certificate_arn
 }
 
 module "lambda" {
