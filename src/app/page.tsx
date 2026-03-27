@@ -89,6 +89,76 @@ export default function Home() {
         </p>
       </section>
 
+      {/* ── Education ────────────────────────────────────── */}
+      {profile.education && (
+        <section>
+          <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
+            Education
+          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
+            <div>
+              <p className="font-semibold text-neutral-900 dark:text-neutral-100">{profile.education.school}</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{profile.education.major}</p>
+            </div>
+            <div className="sm:ml-auto text-sm text-neutral-700 dark:text-neutral-300 space-y-0.5">
+              <p>전체 학점 <span className="font-medium">{profile.education.gpa}</span></p>
+              <p>전공 학점 <span className="font-medium">{profile.education.majorGpa}</span></p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Bootcamp ─────────────────────────────────────── */}
+      {profile.bootcamp && profile.bootcamp.length > 0 && (
+        <section>
+          <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
+            Bootcamp
+          </h2>
+          <div className="space-y-4">
+            {profile.bootcamp.map((item, idx) => (
+              <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
+                <div>
+                  <p className="font-semibold text-neutral-900 dark:text-neutral-100">{item.name}</p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{item.organizer}</p>
+                </div>
+                <p className="sm:ml-auto text-sm text-neutral-700 dark:text-neutral-300">
+                  {item.period}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Experience ───────────────────────────────────── */}
+      {profile.experience && profile.experience.length > 0 && (
+        <section>
+          <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
+            Experience
+          </h2>
+          <div className="space-y-4">
+            {profile.experience.map((item, idx) => (
+              <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
+                <div>
+                  <p className="font-semibold text-neutral-900 dark:text-neutral-100">
+                    {item.company}
+                  </p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    {item.role}
+                  </p>
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-2 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+                <p className="sm:ml-auto text-sm text-neutral-700 dark:text-neutral-300">
+                  {item.period}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── Skills ───────────────────────────────────────── */}
       <section>
         <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">

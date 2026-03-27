@@ -50,7 +50,7 @@ export const projects: Project[] = [
       role: "게시글, 댓글, 대댓글, 좋아요, 신고 기능의 API 설계 및 구현을 담당했습니다. 인증 구조 연동, 응답 DTO 개선, 예외 처리, Docker 기반 실행 환경 이해와 배포 구조 파악에도 참여했습니다.",
     },
     architecture: {
-      diagram: "/images/projects/newgnal-architecture.png",
+      diagram: "/images/backend_arc.png",
       description:
         "React Native 기반 모바일 앱의 요청을 Spring Boot 백엔드가 처리하고, OAuth2 + JWT + Spring Security 기반 인증, Redis/MySQL 데이터 처리, 뉴스 크롤링 스케줄러와 분석 서비스 연동 구조로 구성했습니다.",
       reasoning:
@@ -121,7 +121,7 @@ export const projects: Project[] = [
     },
     links: {
       github: "https://github.com/eomkyeongmun/Newgnal-Backend",
-      demo: "https://...", // PDF 링크
+      demo: "/images/tave_pdf.pdf", // PDF 링크
     },
   },
   {
@@ -134,7 +134,7 @@ export const projects: Project[] = [
       role: "팀장으로서 전체 일정과 방향을 조율했고, 기술적으로는 쿠버네티스 중심 아키텍처 설계와 EKS 학습·구축을 주도했습니다. 일부 모니터링 및 알림 체계 구성에도 참여했습니다.",
     },
     architecture: {
-      diagram: "/images/projects/eks-architecture.png",
+      diagram: "/images/aws_cj_infra.png",
       description:
         "전체 구조는 Prod / QA / Dev / DR / Central VPC로 나뉩니다. Prod와 QA는 공통적으로 CloudFront → ALB(Ingress) → Kubernetes Service → Pod 흐름의 EKS 기반 구조를 사용했고, 가용성을 위해 멀티 AZ로 구성했습니다. 데이터 계층은 Aurora DB + Reader Endpoint + RDS Proxy로 설계해 읽기 트래픽 분산과 커넥션 안정성을 확보했습니다. Prod는 On-Demand + Spot NodePool 분리 운영, QA는 비용 절감을 위해 Spot 중심으로 운영했습니다. Central VPC에는 GitLab 서버와 모니터링 스택 서버를 두어 여러 환경을 한 곳에서 관리하는 중앙 관제형 구조를 만들었고, DR은 Pilot Light 방식으로 설계해 평시 비용을 줄이고 필요 시 복구 가능한 형태로 구성했습니다. DNS 질의 흐름은 Route 53 Resolver → DNS Firewall(ALERT) → Query Logging → CloudWatch Logs → Metric Filter → Alarm → SNS → Lambda → Slack Alert로 연결해 외부 도메인 접근을 추적할 수 있도록 구성했습니다.",
       reasoning:
@@ -216,9 +216,8 @@ export const projects: Project[] = [
         "Karpenter까지 포함한 완전한 GitOps화, Central VPC 보안 정책의 BLOCK/탐지 규칙 고도화, 부하 테스트 기반 비용 예측 정교화를 다음 단계로 진행할 계획입니다.",
     },
     links: {
-      github: "https://github.com/...",
-      demo: "https://...", // PDF 링크
-      blog: "https://...",
+      demo: "/images/CJ.pptx", // PDF 링크
+      blog: "https://velog.io/@eomkyeongmun/series/CJ-%EC%98%AC%EB%A6%AC%EB%B8%8C%EB%84%A4%ED%8A%B8%EC%9B%8D%EC%8A%A4-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8",
     },
   },
   {
@@ -267,7 +266,7 @@ export const projects: Project[] = [
       futureWork: "추후 작성 예정",
     },
     links: {
-      github: "https://github.com/...",
+      github: "https://github.com/eomkyeongmun/my-portfolio",
     },
   },
 ];
