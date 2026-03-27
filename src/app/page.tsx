@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { profile } from "@/data/profile";
 import { skills } from "@/data/skills";
 import { projects } from "@/data/projects";
@@ -241,12 +240,12 @@ export default function Home() {
               className="group rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors bg-neutral-50 dark:bg-neutral-900/50 overflow-hidden block"
             >
               {(project.thumbnail ?? project.architecture.diagram) && (
-                <div className="relative w-full aspect-video bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                  <Image
+                <div className="w-full aspect-video bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={project.thumbnail ?? project.architecture.diagram}
                     alt={`${project.title} 썸네일`}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               )}
