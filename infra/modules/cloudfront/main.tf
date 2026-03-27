@@ -50,6 +50,10 @@ resource "aws_cloudfront_distribution" "website" {
   default_root_object = "index.html"
   comment             = "${var.project_name} portfolio (${var.environment})"
   price_class         = "PriceClass_200" # 북미 + 유럽 + 아시아 (PriceClass_All보다 저렴)
+  web_acl_id          = var.web_acl_arn  # WAF WebACL 연결
+
+  # 커스텀 도메인이 설정된 경우 aliases 추가
+  aliases = var.domain_name != null ? [var.domain_name] : []
 
   origin {
     domain_name              = var.s3_bucket_regional_domain_name
@@ -84,16 +88,21 @@ resource "aws_cloudfront_distribution" "website" {
     error_caching_min_ttl = 10
   }
 
-  # 기본 CloudFront 인증서 (*.cloudfront.net)
-  # 커스텀 도메인 연결 시 아래 주석을 해제하고 ACM 인증서 ARN을 설정:
-  #
-  # viewer_certificate {
-  #   acm_certificate_arn      = var.acm_certificate_arn  # us-east-1 리전 인증서
-  #   ssl_support_method       = "sni-only"
-  #   minimum_protocol_version = "TLSv1.2_2021"
-  # }
-  viewer_certificate {
-    cloudfront_default_certificate = true
+  # 커스텀 도메인이 있으면 ACM 인증서 사용, 없으면 기본 CloudFront 인증서 사용
+  dynamic "viewer_certificate" {
+    for_each = var.acm_certificate_arn != null ? [1] : []
+    content {
+      acm_certificate_arn      = var.acm_certificate_arn
+      ssl_support_method       = "sni-only"
+      minimum_protocol_version = "TLSv1.2_2021"
+    }
+  }
+
+  dynamic "viewer_certificate" {
+    for_each = var.acm_certificate_arn == null ? [1] : []
+    content {
+      cloudfront_default_certificate = true
+    }
   }
 
   restrictions {

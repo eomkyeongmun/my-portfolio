@@ -1,3 +1,24 @@
+output "site_url" {
+  description = "포트폴리오 사이트 URL"
+  value       = "https://${var.domain_name}"
+}
+
+output "acm_validation_records" {
+  description = "가비아 DNS에 등록할 ACM 검증 CNAME 레코드"
+  value = {
+    for dvo in module.acm.domain_validation_options : dvo.domain_name => {
+      name  = dvo.resource_record_name
+      type  = dvo.resource_record_type
+      value = dvo.resource_record_value
+    }
+  }
+}
+
+output "waf_web_acl_arn" {
+  description = "WAF WebACL ARN"
+  value       = module.waf.web_acl_arn
+}
+
 output "cloudfront_domain_name" {
   description = "CloudFront 배포 도메인 (사이트 접속 URL)"
   value       = module.cloudfront.distribution_domain_name

@@ -26,6 +26,12 @@ variable "bucket_name" {
   type        = string
 }
 
+variable "domain_name" {
+  description = "커스텀 도메인 (예: eomkyeongmun.me)"
+  type        = string
+  default     = null
+}
+
 variable "lambda_image_uri" {
   description = <<-EOT
     Lambda 컨테이너 이미지 URI (ECR).

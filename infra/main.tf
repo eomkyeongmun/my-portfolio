@@ -9,14 +9,16 @@ terraform {
   }
 
   # 로컬 state (기본값)
-  # S3 backend로 전환하려면 아래 주석을 해제하고 `terraform init -migrate-state` 실행:
+  # S3 backend로 전환하려면:
+  #   1. cd infra/bootstrap && terraform init && terraform apply
+  #   2. 아래 주석 해제 후 terraform init -migrate-state 실행
   #
   # backend "s3" {
-  #   bucket         = "your-terraform-state-bucket"
+  #   bucket         = "my-portfolio-tfstate"
   #   key            = "portfolio/terraform.tfstate"
   #   region         = "ap-northeast-2"
   #   encrypt        = true
-  #   dynamodb_table = "terraform-lock"  # 선택: state locking용
+  #   dynamodb_table = "my-portfolio-tfstate-lock"
   # }
 }
 
@@ -32,7 +34,42 @@ provider "aws" {
   }
 }
 
+# WAF (scope=CLOUDFRONT) 는 반드시 us-east-1 리전에서 생성해야 함
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      Project     = var.project_name
+      Environment = var.environment
+      ManagedBy   = "terraform"
+    }
+  }
+}
+
 # ─── Modules ────────────────────────────────────────────────────────────────
+
+module "waf" {
+  source       = "./modules/waf"
+  project_name = var.project_name
+  environment  = var.environment
+
+  providers = {
+    aws = aws.us_east_1
+  }
+}
+
+module "acm" {
+  source       = "./modules/acm"
+  project_name = var.project_name
+  environment  = var.environment
+  domain_name  = var.domain_name
+
+  providers = {
+    aws = aws.us_east_1
+  }
+}
 
 module "iam" {
   source       = "./modules/iam"
@@ -48,12 +85,16 @@ module "s3" {
 }
 
 module "cloudfront" {
-  source                        = "./modules/cloudfront"
-  project_name                  = var.project_name
-  environment                   = var.environment
-  s3_bucket_id                  = module.s3.bucket_id
-  s3_bucket_arn                 = module.s3.bucket_arn
+  source                         = "./modules/cloudfront"
+  project_name                   = var.project_name
+  environment                    = var.environment
+  s3_bucket_id                   = module.s3.bucket_id
+  s3_bucket_arn                  = module.s3.bucket_arn
   s3_bucket_regional_domain_name = module.s3.bucket_regional_domain_name
+  web_acl_arn                    = module.waf.web_acl_arn
+  # domain_name / acm_certificate_arn 은 인증서 검증 완료 후 활성화
+  # domain_name         = var.domain_name
+  # acm_certificate_arn = module.acm.certificate_arn
 }
 
 module "lambda" {

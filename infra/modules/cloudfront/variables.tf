@@ -23,9 +23,20 @@ variable "s3_bucket_regional_domain_name" {
   type        = string
 }
 
-# 커스텀 도메인 연결 시 활성화
-# variable "acm_certificate_arn" {
-#   description = "ACM 인증서 ARN (반드시 us-east-1 리전)"
-#   type        = string
-#   default     = null
-# }
+variable "web_acl_arn" {
+  description = "WAF WebACL ARN (module.waf.web_acl_arn)"
+  type        = string
+  default     = null
+}
+
+variable "domain_name" {
+  description = "커스텀 도메인 (예: eomkyeongmun.me). null이면 CloudFront 기본 도메인 사용"
+  type        = string
+  default     = null
+}
+
+variable "acm_certificate_arn" {
+  description = "ACM 인증서 ARN (반드시 us-east-1 리전)"
+  type        = string
+  default     = null
+}
