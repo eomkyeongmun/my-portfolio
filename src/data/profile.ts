@@ -15,7 +15,7 @@ export interface Experience {
   company: string;
   role: string;
   period: string;
-  description: string;
+  description: string[];
 }
 
 export interface Profile {
@@ -54,10 +54,10 @@ export const profile: Profile = {
   ],
   experience: [
     {
-      company: "Rock Korea",
-      role: "Intern",
+      company: "Rock Korea (Intern)",
+      role: "",
       period: "2026.03 - 2026.06",
-      description: "AI 기반 TARA 자동화 툴 개발",
+      description: ["AI 기반 TARA 자동화 툴 개발", "자동차공학회 논문 작성"],
     },
   ],
   keywords: ["AWS / Cloud", "Docker / DevOps", "Infra Architecture"],

@@ -128,11 +128,11 @@ export const projects: Project[] = [
   },
   {
     category: "infrastructure",
-    title: "EKS 기반 대규모 트래픽 대응 및 Central VPC 중앙관제 인프라",
+    title: "EKS · Central VPC 인프라",
     period: "2026.02 ~ 2026.03",
     overview: {
       description:
-        "대규모 트래픽 대응을 목표로, EKS 기반 애플리케이션 플랫폼과 Central VPC 기반 중앙 관제형 네트워크 구조를 함께 설계·구축한 프로젝트입니다. 멀티 AZ, 오토스케일링, 중앙 모니터링, DNS 보안 관측, DR 구조까지 포함한 운영형 인프라를 설계했으며, QA 환경에서 약 2,000 RPS / 총 120,000 요청을 처리하며 구조의 유효성을 검증했습니다.",
+        "EKS 기반 애플리케이션 플랫폼과 Central VPC 중앙 관제 네트워크를 설계·구축했습니다. QA 환경에서 2,000 RPS · 12만 요청을 처리하며 구조의 유효성을 검증했습니다.",
       role: "팀장으로서 전체 일정과 방향을 조율했고, 기술적으로는 쿠버네티스 중심 아키텍처 설계와 EKS 학습·구축을 주도했습니다. 일부 모니터링 및 알림 체계 구성에도 참여했습니다.",
     },
     architecture: {
@@ -224,8 +224,8 @@ export const projects: Project[] = [
   },
   {
     category: "devops",
-    title: "개인 포트폴리오 사이트 구축 (진행 중)",
-    period: "2026.03 ~ 현재",
+    title: "개인 포트폴리오 사이트 구축",
+    period: "2026.03 ~ 진행 중",
     overview: {
       description:
         "Next.js 기반 개인 포트폴리오 웹사이트. 웹 열람용 페이지와 PDF 다운로드를 함께 제공하며, AWS 인프라 위에 직접 배포·운영합니다.",
@@ -234,7 +234,7 @@ export const projects: Project[] = [
     architecture: {
       diagram: "/images/projects/portfolio-architecture.png",
       description:
-        "Next.js 앱을 S3 + CloudFront로 정적 배포하고, PDF 생성 요청은 API Gateway → Lambda(Puppeteer) 구조로 처리합니다. WAF를 CloudFront 앞단에 붙여 보안을 강화했습니다.",
+        "Next.js 앱을 S3 + CloudFront로 정적 배포하고, PDF 생성 요청은 API Gateway → Lambda(Puppeteer) 구조로 처리합니다. WAF를 CloudFront 앞단에 붙여 보안을 강화하고, X-Ray로 API Gateway~Lambda 구간 분산 추적을 구성했습니다.",
       reasoning:
         "정적 사이트에 서버가 필요한 PDF 생성 기능만 Lambda로 분리해 운영 비용을 최소화했습니다. CloudFront + S3 조합으로 글로벌 CDN을 무서버로 구성했습니다.",
     },
@@ -259,6 +259,12 @@ export const projects: Project[] = [
         name: "Terraform",
         role: "인프라 전체 코드 관리",
         reason: "콘솔 수동 작업 없이 인프라를 재현 가능하게 관리하기 위해 사용했습니다.",
+      },
+      {
+        name: "AWS X-Ray",
+        role: "API Gateway → Lambda 구간 분산 추적",
+        reason:
+          "단순 에러 로그로는 알 수 없는 Lambda Cold Start, Puppeteer 렌더링 등 구간별 지연 병목을 시각화하기 위해 도입했습니다.",
       },
     ],
     problemSolving: [],

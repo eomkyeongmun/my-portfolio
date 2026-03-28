@@ -16,10 +16,11 @@ const categoryColor: Record<string, string> = {
 };
 
 const skillCategoryColor: Record<string, string> = {
-  Backend: "bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-  Infrastructure: "bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
-  "DevOps/Tools": "bg-cyan-200 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300",
-  Monitoring: "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
+  Backend:           "bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+  "Infra / Platform": "bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
+  "CI/CD & GitOps":  "bg-cyan-200 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300",
+  Observability:     "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
+  Security:          "bg-green-200 text-green-800 dark:bg-green-900/50 dark:text-green-300",
 };
 
 const projectCategoryColor: Record<string, string> = {
@@ -165,12 +166,19 @@ export default function Home() {
                   <p className="font-semibold text-neutral-900 dark:text-neutral-100">
                     {item.company}
                   </p>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    {item.role}
-                  </p>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-2 leading-relaxed">
-                    {item.description}
-                  </p>
+                  {item.role && (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {item.role}
+                    </p>
+                  )}
+                  <ul className="mt-2 space-y-0.5">
+                    {item.description.map((line, i) => (
+                      <li key={i} className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed flex gap-1.5">
+                        <span className="text-neutral-400 dark:text-neutral-500 select-none">·</span>
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 shrink-0 sm:pt-0.5">
                   {item.period}
@@ -215,9 +223,16 @@ export default function Home() {
               <div className="space-y-2">
                 {cat.items.map((skill) => (
                   <div key={skill.name} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-                    <span className="font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400 shrink-0 w-40">
-                      {skill.name}
-                    </span>
+                    <div className="flex items-baseline gap-1.5 shrink-0 w-52">
+                      <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                        {skill.name}
+                      </span>
+                      <span className="font-mono text-xs tracking-tighter" aria-label={`중요도 ${skill.level}단계`}>
+                        {Array.from({ length: 3 }, (_, i) => (
+                          <span key={i} className={i < skill.level ? "text-neutral-500 dark:text-neutral-400" : "text-neutral-200 dark:text-neutral-700"}>★</span>
+                        ))}
+                      </span>
+                    </div>
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">
                       {skill.description}
                     </span>
@@ -262,13 +277,14 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-2 leading-snug text-sm">
+                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 leading-snug text-sm mb-1">
                   {project.title}
                 </h3>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed mb-3">
-                  {project.overview.description}
-                </p>
-                <p className="font-mono text-xs text-neutral-500 dark:text-neutral-400">{project.period}</p>
+                <div className="flex items-center justify-between">
+                  <p className="font-mono text-xs text-neutral-400 dark:text-neutral-500">{project.period}</p>
+                </div>
+                <hr className="border-neutral-200 dark:border-neutral-700 my-2" />
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{project.overview.description}</p>
               </div>
             </Link>
           ))}
@@ -282,28 +298,29 @@ export default function Home() {
           {highlights.map((h, i) => (
             <div
               key={i}
-              className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+              className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors flex flex-col gap-3"
             >
-              <div className="flex flex-wrap items-center gap-2 mb-3">
+              <div>
                 <span className={`font-mono text-xs px-2 py-0.5 rounded ${categoryColor[h.category] ?? categoryColor["기타"]}`}>
                   {h.category}
                 </span>
-                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm">
+                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm mt-2 leading-snug">
                   {h.title}
                 </h3>
               </div>
-              <dl className="space-y-2 text-sm">
+              <hr className="border-neutral-200 dark:border-neutral-700" />
+              <dl className="space-y-2 text-xs pt-3">
                 <div className="flex gap-2">
-                  <dt className="shrink-0 font-mono text-xs text-neutral-500 dark:text-neutral-400 w-8 pt-0.5">문제</dt>
-                  <dd className="text-neutral-700 dark:text-neutral-300 leading-relaxed">{h.problem}</dd>
+                  <dt className="shrink-0 whitespace-nowrap font-mono text-neutral-600 dark:text-neutral-300 font-medium">문제</dt>
+                  <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed">{h.problem}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="shrink-0 font-mono text-xs text-neutral-500 dark:text-neutral-400 w-8 pt-0.5">해결</dt>
-                  <dd className="text-neutral-700 dark:text-neutral-300 leading-relaxed">{h.action}</dd>
+                  <dt className="shrink-0 whitespace-nowrap font-mono text-neutral-600 dark:text-neutral-300 font-medium">해결</dt>
+                  <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed">{h.action}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="shrink-0 font-mono text-xs text-neutral-500 dark:text-neutral-400 w-8 pt-0.5">결과</dt>
-                  <dd className="text-neutral-700 dark:text-neutral-300 leading-relaxed">{h.result}</dd>
+                  <dt className="shrink-0 whitespace-nowrap font-mono text-neutral-600 dark:text-neutral-300 font-medium">결과</dt>
+                  <dd className="text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium">{h.result}</dd>
                 </div>
               </dl>
             </div>

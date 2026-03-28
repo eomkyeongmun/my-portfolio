@@ -1,4 +1,4 @@
-export type HighlightCategory = 
+export type HighlightCategory =
   | "장애대응"
   | "CICD"
   | "모니터링"
@@ -10,31 +10,31 @@ export type HighlightCategory =
 export interface Highlight {
   title: string;
   category: HighlightCategory;
-  problem: string; // 어떤 문제를 겪었는가
-  action: string;  // 어떻게 해결했는가 (어떤 기준과 이유로 이 방법을 택했는가)
-  result: string;  // 구체적인 수치나 사실 기반의 결과 (정량적 지표 포함 지향)
+  problem: string;
+  action: string;
+  result: string;
 }
 
 export const highlights: Highlight[] = [
   {
-    title: "성공 경험 또는 강렬한 문제 해결 경험 제목 (예: 복합 인덱스 추가를 통한 비용 30% 절감)",
+    title: "EKS 다층 오토스케일링으로 2,000 RPS 대응",
+    category: "트래픽",
+    problem: "CPU 기반 HPA는 실제 요청량 변화를 즉시 반영하지 못했고, 미준비 Pod로 트래픽이 유입되거나 노드 확보 지연으로 Pending이 반복됐다.",
+    action: "Probe 분리·ALB 헬스체크 통일로 미준비 Pod 차단, KEDA로 RPS 기반 Pod 확장, 45개 선기동으로 초기 수용량 확보, Karpenter로 노드 자동 추가.",
+    result: "QA에서 2,000 RPS 60초 안정 유지, 120,000건 처리 검증. 다층 오토스케일링 구조 완성.",
+  },
+  {
+    title: "분산 NAT → Central VPC · TGW 중앙화",
     category: "비용최적화",
-    problem: "해결 전 상황 (예: 비효율적인 DB 쿼리로 인해 CPU 사용률이 급증, 스케일업 요구가 나왔던 상황)",
-    action: "실행한 조치 및 이유 (예: 스케일업을 통한 일시적 무마 대신, 실행 계획(Explain) 분석 후 N+1 문제 해결 및 적합한 복합 인덱스 구성. 근본적 문제 해결을 우선시한 선택)", // 모든 선택에는 이유가 있어야 한다
-    result: "결과 (예: 평균 API 응답 시간 1.2s -> 0.1s로 개선 및 스케일다운을 통해 월 인프라 비용 30% 절감 달성)",
+    problem: "환경마다 NAT Gateway를 독립 운영해 고정 비용이 중복됐고, 보안·로그 관측 지점이 여러 VPC에 분산돼 운영 복잡도가 높았다.",
+    action: "Central VPC 중심으로 egress 재설계, TGW로 각 VPC 연결. GitLab·모니터링 등 공통 서비스를 Central VPC에 집중 배치.",
+    result: "Dev·QA·Prod·DR 4환경 NAT를 Central VPC 1개로 통합해 고정 비용 절감. 외부 통신·보안 이벤트 단일 관측 지점 확보.",
   },
   {
-    title: "강조할 경험 제목 (예: 새벽 시간대 DB 커넥션 풀 고갈 장애 대응)",
-    category: "장애대응",
-    problem: "발생한 문제 (예: 데이터 마이그레이션 배치 작업 수행 시, 실시간 고객 서비스의 DB 커넥션 병목 현상이 발생하여 장애 리포팅됨)",
-    action: "실행한 조치 및 이유 (예: 임시로 커넥션 풀을 늘리는 방안도 있었지만, 실시간 서비스 영향도를 원천 차단하기 위해 배치용 Read Replica를 별도 분리하는 아키텍처로 변경)", // 모든 선택에는 이유가 있어야 한다
-    result: "결과 (예: 무거운 배치 작업 진행 중에도 실시간 API 타임아웃 0건 달성 및 안정적인 트래픽 처리 경험)",
-  },
-  {
-    title: "강조할 경험 제목 (예: GitHub Actions 기반 무중단 배포 파이프라인 구축)",
+    title: "멀티스테이지 Docker 빌드로 이미지 경량화",
     category: "CICD",
-    problem: "발생한 문제 (예: 수동 배포 프로세스로 인한 배포 누락·실수 및 팀 전체 배포 대기 시간 과다 발생)",
-    action: "실행한 조치 및 이유 (예: 단순 스크립트 자동화가 아닌, 빌드·테스트·배포를 단계별로 분리하고 실패 시 자동 롤백되는 파이프라인 설계. 안정성 우선 원칙에 따라 블루/그린 전략 적용)",
-    result: "결과 (예: 배포 시간 기존 대비 70% 단축, 배포 관련 장애 0건, 개발자 수동 개입 없는 자동 배포 달성)",
+    problem: "단일 이미지에 JDK·Gradle·소스코드까지 포함돼 이미지가 크고, CI/CD 빌드·푸시 시간과 ECR 저장 부담이 불필요하게 늘었다.",
+    action: "빌드 단계(Gradle JAR 생성)와 실행 단계(JRE 경량 이미지)를 분리해 Dockerfile 재구성. 런타임에는 최종 산출물만 포함.",
+    result: "빌드 단계 제거로 이미지 크기 대폭 감소, ECR 푸시 시간 단축. 런타임 최소 구성으로 배포 안정성·비용 동시 개선.",
   },
 ];
