@@ -17,13 +17,13 @@ export const skills: SkillCategory[] = [
         name: "Spring Boot",
         description:
           "Spring Security·OAuth2·JWT 기반 인증과 레이어드 아키텍처 REST API 설계·구현",
-        level: 3,
+        level: 2,
       },
       {
         name: "Java",
         description:
           "OOP 원칙 기반 의존성 주입·인터페이스 분리로 모듈 결합도 최소화",
-        level: 3,
+        level: 2,
       },
       {
         name: "Python / FastAPI",
@@ -51,7 +51,7 @@ export const skills: SkillCategory[] = [
         name: "Terraform",
         description:
           "전 환경 인프라를 코드로 정의해 환경별 재현성·DR 구조 확보",
-        level: 3,
+        level: 2,
       },
       {
         name: "AWS (CloudFront · S3)",
@@ -80,7 +80,7 @@ export const skills: SkillCategory[] = [
         name: "GitHub Actions",
         description:
           "빌드·테스트·배포 전 과정 파이프라인 자동화로 수동 배포 제거",
-        level: 3,
+        level: 2,
       },
       {
         name: "Argo CD",
@@ -97,7 +97,7 @@ export const skills: SkillCategory[] = [
         name: "Prometheus / Grafana",
         description:
           "메트릭 수집·시각화 대시보드 구축, KEDA 스케일링 판단 지표로 활용",
-        level: 3,
+        level: 2,
       },
       {
         name: "CloudWatch",
@@ -109,7 +109,7 @@ export const skills: SkillCategory[] = [
         name: "OpenTelemetry / X-Ray",
         description:
           "분산 추적으로 서비스 간 레이턴시 병목 분석 및 요청 흐름 가시화",
-        level: 1,
+        level: 2,
       },
     ],
   },
