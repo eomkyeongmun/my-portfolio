@@ -234,7 +234,7 @@ export const projects: Project[] = [
     architecture: {
       diagram: "/images/AI.png",
       description:
-        "사용자는 외부 DNS(CNAME) → CloudFront(OAC) → S3 경로로 정적 페이지를 제공받습니다. PDF 다운로드 요청은 CloudFront → API Gateway → Lambda(Puppeteer) 흐름으로 처리됩니다. CloudFront 앞단에 WAF를 배치해 L7 보안을 확보했고, ACM으로 HTTPS 인증서를 관리합니다. Lambda는 ECR에 저장된 컨테이너 이미지로 실행되며, X-Ray로 API Gateway ~ Lambda 구간의 분산 추적을 구성했습니다. GitHub Actions가 코드 변경 시 S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → 함수 업데이트를 자동으로 수행합니다.",
+        "사용자는 외부 DNS(CNAME) → CloudFront(OAC) → S3 경로로 정적 페이지를 제공받습니다. PDF 다운로드 요청은 CloudFront → API Gateway → Lambda(Puppeteer) 흐름으로 처리됩니다. CloudFront 앞단에 WAF를 배치해 L7 보안을 확보했고, Response Headers Policy로 HSTS·X-Frame-Options 등 보안 헤더를 모든 응답에 자동 추가합니다. ACM으로 HTTPS 인증서를 관리하고, Lambda는 ECR에 저장된 컨테이너 이미지로 실행됩니다. X-Ray로 API Gateway ~ Lambda 구간의 분산 추적을 구성했으며, CloudWatch 대시보드와 SNS 알람으로 Lambda 오류·Duration·Throttle, API Gateway 5xx를 실시간 감지합니다. GitHub Actions가 코드 변경 시 S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → 함수 업데이트를 자동으로 수행합니다.",
       reasoning:
         "PDF 생성처럼 간헐적으로 발생하는 무거운 작업을 상시 서버 없이 Lambda로 분리해 운영 비용을 최소화했습니다. 정적 콘텐츠는 CloudFront + S3로 글로벌 캐싱하고, 서버가 필요한 기능만 서버리스로 붙이는 구조로 단순성과 비용 효율을 동시에 확보했습니다. 모든 인프라는 Terraform으로 코드화해 재현성과 변경 이력 관리를 확보했습니다.",
     },
@@ -299,6 +299,18 @@ export const projects: Project[] = [
         reason:
           "코드 push 시 Next.js 빌드 → S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → Lambda 함수 업데이트를 자동화해 수동 배포를 완전히 제거했습니다.",
       },
+      {
+        name: "CloudWatch + SNS",
+        role: "운영 모니터링 및 알람",
+        reason:
+          "Lambda 오류·Duration 임계값 초과·Throttle, API Gateway 5xx를 CloudWatch Alarm으로 감지하고 SNS 이메일 구독으로 즉시 알림을 받도록 구성했습니다. 대시보드로 호출 추이·지연 시간을 한눈에 확인할 수 있어 장애 대응 속도를 높였습니다.",
+      },
+      {
+        name: "CloudFront Response Headers Policy",
+        role: "보안 헤더 자동 삽입",
+        reason:
+          "CloudFront Function 없이 AWS 관리형 정책으로 HSTS(2년)·X-Frame-Options·X-Content-Type-Options·XSS-Protection·Referrer-Policy·Permissions-Policy를 모든 응답에 일괄 적용해 코드 유지보수 없이 보안 레이어를 완성했습니다.",
+      },
     ],
     problemSolving: [
       {
@@ -322,7 +334,7 @@ export const projects: Project[] = [
     ],
     retrospective: {
       improvements:
-        "프론트엔드 개발부터 서버리스 백엔드, IaC, CI/CD까지 하나의 서비스를 혼자서 끝까지 구축하며 전체 흐름을 직접 연결했습니다. S3 OAC, WAF, X-Ray 등 실제 운영 수준의 보안·관측 레이어를 적용해 단순 배포를 넘어선 구조를 경험했습니다.",
+        "프론트엔드 개발부터 서버리스 백엔드, IaC, CI/CD까지 하나의 서비스를 혼자서 끝까지 구축하며 전체 흐름을 직접 연결했습니다. S3 OAC, WAF, X-Ray, CloudWatch 알람, 보안 헤더 정책까지 실제 운영 수준의 보안·관측 레이어를 단계적으로 추가하며 단순 배포를 넘어선 구조를 완성했습니다.",
       regrets:
         "Lambda Cold Start 지연이 PDF 생성 첫 요청에서 체감될 수 있는데, Provisioned Concurrency 적용 여부를 충분히 검토하지 못했습니다. Terraform 모듈 구조도 초기 설계보다 복잡해져 리팩터링이 필요한 상태입니다.",
       futureWork:
