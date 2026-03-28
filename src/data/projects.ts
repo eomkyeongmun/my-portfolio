@@ -225,14 +225,14 @@ export const projects: Project[] = [
     category: "devops",
     title: "개인 포트폴리오 사이트 구축",
     period: "2026.03 ~ 진행 중",
-    thumbnail: "/images/AI.png",
+    thumbnail: "/images/Gemini_Generated_Image_22lrqw22lrqw22lr.png",
     overview: {
       description:
         "Next.js 기반 개인 포트폴리오 웹사이트. 웹 열람용 페이지와 PDF 다운로드를 함께 제공하며, S3 + CloudFront + Lambda 서버리스 구조로 AWS에 직접 배포·운영합니다.",
       role: "Next.js 프론트엔드 개발, Tailwind CSS 디자인, Puppeteer 기반 PDF 생성, Terraform IaC 인프라 구축, GitHub Actions CI/CD 파이프라인 구성까지 전 과정 단독 담당",
     },
     architecture: {
-      diagram: "/images/AI.png",
+      diagram: "/images/Gemini_Generated_Image_22lrqw22lrqw22lr.png",
       description:
         "사용자는 외부 DNS(CNAME) → CloudFront(OAC) → S3 경로로 정적 페이지를 제공받습니다. PDF 다운로드 요청은 CloudFront → API Gateway → Lambda(Puppeteer) 흐름으로 처리됩니다. CloudFront 앞단에 WAF를 배치해 L7 보안을 확보했고, Response Headers Policy로 HSTS·X-Frame-Options 등 보안 헤더를 모든 응답에 자동 추가합니다. ACM으로 HTTPS 인증서를 관리하고, Lambda는 ECR에 저장된 컨테이너 이미지로 실행됩니다. X-Ray로 API Gateway ~ Lambda 구간의 분산 추적을 구성했으며, CloudWatch 대시보드와 SNS 알람으로 Lambda 오류·Duration·Throttle, API Gateway 5xx를 실시간 감지합니다. GitHub Actions가 코드 변경 시 S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → 함수 업데이트를 자동으로 수행합니다.",
       reasoning:
