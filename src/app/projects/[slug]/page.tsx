@@ -64,8 +64,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-6">
           {project.title}
         </h1>
-        <div className="space-y-3 text-base leading-7 text-neutral-700 dark:text-neutral-300 border-l-2 border-emerald-200 dark:border-emerald-800 pl-4">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 space-y-3 text-base leading-7 text-neutral-700 dark:text-neutral-300">
           <p>{project.overview.description}</p>
+          <hr className="border-neutral-200 dark:border-neutral-700" />
           <p>
             <span className="font-medium text-neutral-900 dark:text-neutral-100">담당 역할: </span>
             {project.overview.role}

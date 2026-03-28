@@ -119,16 +119,18 @@ export default function Home() {
       {/* ── Summary ──────────────────────────────────────── */}
       <section>
         <SectionLabel>about</SectionLabel>
-        <p className="text-base leading-8 text-neutral-700 dark:text-neutral-300 border-l-2 border-emerald-200 dark:border-emerald-800 pl-4">
-          {profile.summary}
-        </p>
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5">
+          <p className="text-base leading-8 text-neutral-700 dark:text-neutral-300">
+            {profile.summary}
+          </p>
+        </div>
       </section>
 
       {/* ── Education ────────────────────────────────────── */}
       {profile.education && (
         <section>
           <SectionLabel>education</SectionLabel>
-          <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5">
             <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
               <div>
                 <p className="font-semibold text-neutral-900 dark:text-neutral-100">{profile.education.school}</p>
@@ -147,9 +149,9 @@ export default function Home() {
       {profile.bootcamp && profile.bootcamp.length > 0 && (
         <section>
           <SectionLabel>bootcamp</SectionLabel>
-          <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4 space-y-4">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 space-y-4">
             {profile.bootcamp.map((item, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
+              <div key={idx} className={`flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8 ${idx > 0 ? "border-t border-neutral-200 dark:border-neutral-700 pt-4" : ""}`}>
                 <div>
                   <p className="font-semibold text-neutral-900 dark:text-neutral-100">{item.name}</p>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{item.organizer}</p>
@@ -167,9 +169,9 @@ export default function Home() {
       {profile.experience && profile.experience.length > 0 && (
         <section>
           <SectionLabel>experience</SectionLabel>
-          <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4 space-y-6">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 space-y-6">
             {profile.experience.map((item, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
+              <div key={idx} className={`flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8 ${idx > 0 ? "border-t border-neutral-200 dark:border-neutral-700 pt-6" : ""}`}>
                 <div className="flex-1">
                   <p className="font-semibold text-neutral-900 dark:text-neutral-100">
                     {item.company}
@@ -201,9 +203,9 @@ export default function Home() {
       {profile.clubs && profile.clubs.length > 0 && (
         <section>
           <SectionLabel>activities</SectionLabel>
-          <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4 space-y-3">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 space-y-3">
             {profile.clubs.map((club, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-8">
+              <div key={idx} className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-8 ${idx > 0 ? "border-t border-neutral-200 dark:border-neutral-700 pt-3" : ""}`}>
                 <p className="font-semibold text-neutral-900 dark:text-neutral-100">{club.name}</p>
                 <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
                   {club.period}
@@ -218,9 +220,9 @@ export default function Home() {
       {certifications.length > 0 && (
         <section>
           <SectionLabel>certifications</SectionLabel>
-          <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4 space-y-4">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 space-y-4">
             {certifications.map((cert, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
+              <div key={idx} className={`flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8 ${idx > 0 ? "border-t border-neutral-200 dark:border-neutral-700 pt-4" : ""}`}>
                 <div>
                   <p className="font-semibold text-neutral-900 dark:text-neutral-100">{cert.name}</p>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{cert.issuer}</p>
@@ -237,7 +239,7 @@ export default function Home() {
       {/* ── Skills ───────────────────────────────────────── */}
       <section>
         <SectionLabel>skills</SectionLabel>
-        <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4 space-y-6">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 space-y-6">
           {skills.map((cat) => (
             <div key={cat.category}>
               <h3 className="mb-3">
