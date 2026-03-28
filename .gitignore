@@ -39,6 +39,7 @@ yarn-error.log*
 
 # deploy guide (contains account-specific info)
 DEPLOY_SETUP.txt
+FEEDBACK_SYSTEM.md
 
 # Terraform — state에 IAM 키 등 민감값 포함
 infra/.terraform/
