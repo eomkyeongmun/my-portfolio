@@ -123,7 +123,7 @@ export const projects: Project[] = [
     },
     links: {
       github: "https://github.com/eomkyeongmun/Newgnal-Backend",
-      velog: "/images/tave_pdf.pdf", // PDF 링크
+      demo: "/images/tave_pdf.pdf", // PDF 링크
     },
   },
   {
