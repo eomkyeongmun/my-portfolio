@@ -112,6 +112,7 @@ module "api_gateway" {
   environment       = var.environment
   lambda_arn        = module.lambda.lambda_arn
   lambda_invoke_arn = module.lambda.lambda_invoke_arn
+  domain_name       = var.domain_name
 }
 
 module "monitoring" {

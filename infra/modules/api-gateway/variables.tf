@@ -17,3 +17,9 @@ variable "lambda_invoke_arn" {
   description = "PDF 생성 Lambda 함수 Invoke ARN"
   type        = string
 }
+
+variable "domain_name" {
+  description = "커스텀 도메인 (CORS allow_origins에 사용, null이면 전체 허용)"
+  type        = string
+  default     = null
+}

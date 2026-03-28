@@ -7,7 +7,7 @@ resource "aws_apigatewayv2_api" "pdf_api" {
   cors_configuration {
     allow_headers = ["Content-Type", "Authorization"]
     allow_methods = ["GET", "OPTIONS"]
-    allow_origins = ["*"] # 배포 후 실제 도메인으로 제한 권장
+    allow_origins = var.domain_name != null ? ["https://${var.domain_name}"] : ["*"]
     max_age       = 3600
   }
 
