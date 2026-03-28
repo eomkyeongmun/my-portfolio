@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { projects } from "@/data/projects";
-import { PdfDownloadButton } from "@/components/PdfDownloadButton";
 
 export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.category }));
@@ -94,7 +93,6 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
               Blog
             </a>
           )}
-          <PdfDownloadButton slug={project.category} projectTitle={project.title} variant="outline" />
         </div>
       </section>
 
