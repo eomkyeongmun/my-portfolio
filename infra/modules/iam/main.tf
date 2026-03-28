@@ -32,6 +32,12 @@ resource "aws_iam_role_policy_attachment" "lambda_ecr" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+# X-Ray 추적 데이터 쓰기 권한
+resource "aws_iam_role_policy_attachment" "lambda_xray" {
+  role       = aws_iam_role.lambda_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
+
 # S3 접근 정책 — PDF 저장 버킷에만 쓰기 허용
 resource "aws_iam_role_policy" "lambda_s3" {
   name = "${var.project_name}-lambda-s3-${var.environment}"

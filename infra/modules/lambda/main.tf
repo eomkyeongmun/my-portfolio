@@ -74,6 +74,11 @@ resource "aws_lambda_function" "pdf_generator" {
     }
   }
 
+  # X-Ray 분산 추적 활성화
+  tracing_config {
+    mode = "Active"
+  }
+
   # image_uri는 GitHub Actions CI/CD가 관리 — Terraform이 덮어쓰지 않도록
   lifecycle {
     ignore_changes = [image_uri]

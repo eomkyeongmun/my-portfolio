@@ -34,6 +34,25 @@ data "aws_iam_policy_document" "s3_cloudfront" {
   }
 }
 
+# CloudFront Function — 디렉터리 경로를 index.html로 rewrite
+# /path/ → /path/index.html (trailingSlash: true 로 빌드된 Next.js 정적 사이트용)
+resource "aws_cloudfront_function" "rewrite_index" {
+  name    = "${var.project_name}-rewrite-index-${var.environment}"
+  runtime = "cloudfront-js-2.0"
+  comment = "Rewrite /path/ → /path/index.html for Next.js static export"
+  publish = true
+  code    = <<-EOF
+    async function handler(event) {
+      const request = event.request;
+      const uri = request.uri;
+      if (uri.endsWith('/')) {
+        request.uri = uri + 'index.html';
+      }
+      return request;
+    }
+  EOF
+}
+
 # 관리형 캐시 정책 — CachingOptimized (S3 정적 파일에 최적)
 data "aws_cloudfront_cache_policy" "caching_optimized" {
   name = "Managed-CachingOptimized"
@@ -71,6 +90,11 @@ resource "aws_cloudfront_distribution" "website" {
 
     cache_policy_id          = data.aws_cloudfront_cache_policy.caching_optimized.id
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.cors_s3.id
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.rewrite_index.arn
+    }
   }
 
   # SPA 대응 — 404/403 → index.html 리다이렉트
