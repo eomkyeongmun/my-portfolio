@@ -228,13 +228,13 @@ export const projects: Project[] = [
     thumbnail: "/images/Gemini_Generated_Image_22lrqw22lrqw22lr.png",
     overview: {
       description:
-        "Next.js 기반 개인 포트폴리오 웹사이트. 웹 열람용 페이지와 PDF 다운로드를 함께 제공하며, S3 + CloudFront + Lambda 서버리스 구조로 AWS에 직접 배포·운영합니다.",
-      role: "Next.js 프론트엔드 개발, Tailwind CSS 디자인, Puppeteer 기반 PDF 생성, Terraform IaC 인프라 구축, GitHub Actions CI/CD 파이프라인 구성까지 전 과정 단독 담당",
+        "Next.js 기반 개인 포트폴리오 웹사이트. 웹 열람용 페이지, PDF 다운로드, 방문자 피드백 수신 기능을 함께 제공하며, S3 + CloudFront + Lambda 서버리스 구조로 AWS에 직접 배포·운영합니다.",
+      role: "Next.js 프론트엔드 개발, Tailwind CSS 디자인, Puppeteer 기반 PDF 생성, EventBridge + SES 기반 피드백 알림 시스템 구축, Terraform IaC 인프라 구축, GitHub Actions CI/CD 파이프라인 구성까지 전 과정 단독 담당",
     },
     architecture: {
       diagram: "/images/Gemini_Generated_Image_22lrqw22lrqw22lr.png",
       description:
-        "사용자는 외부 DNS(CNAME) → CloudFront(OAC) → S3 경로로 정적 페이지를 제공받습니다. PDF 다운로드 요청은 CloudFront → API Gateway → Lambda(Puppeteer) 흐름으로 처리됩니다. CloudFront 앞단에 WAF를 배치해 L7 보안을 확보했고, Response Headers Policy로 HSTS·X-Frame-Options 등 보안 헤더를 모든 응답에 자동 추가합니다. ACM으로 HTTPS 인증서를 관리하고, Lambda는 ECR에 저장된 컨테이너 이미지로 실행됩니다. X-Ray로 API Gateway ~ Lambda 구간의 분산 추적을 구성했으며, CloudWatch 대시보드와 SNS 알람으로 Lambda 오류·Duration·Throttle, API Gateway 5xx를 실시간 감지합니다. GitHub Actions가 코드 변경 시 S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → 함수 업데이트를 자동으로 수행합니다.",
+        "사용자는 외부 DNS(CNAME) → CloudFront(OAC) → S3 경로로 정적 페이지를 제공받습니다. PDF 다운로드 요청은 API Gateway → Lambda(Puppeteer) 흐름으로 처리됩니다. 피드백 제출은 API Gateway → Lambda(feedback-handler) → EventBridge(portfolio-events) → Lambda(email-sender) → SES 흐름으로 처리되며, 방문자의 피드백이 실시간으로 이메일로 전달됩니다. CloudFront 앞단에 WAF를 배치해 L7 보안을 확보했고, Response Headers Policy로 HSTS·X-Frame-Options 등 보안 헤더를 모든 응답에 자동 추가합니다. ACM으로 HTTPS 인증서를 관리하고, PDF Lambda는 ECR 컨테이너 이미지로, 피드백 Lambda는 zip 패키지로 실행됩니다. X-Ray로 API Gateway ~ Lambda 구간의 분산 추적을 구성했으며, CloudWatch 대시보드와 SNS 알람으로 Lambda 오류·Duration·Throttle, API Gateway 5xx를 실시간 감지합니다. GitHub Actions가 코드 변경 시 S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → 함수 업데이트를 자동으로 수행합니다.",
       reasoning:
         "PDF 생성처럼 간헐적으로 발생하는 무거운 작업을 상시 서버 없이 Lambda로 분리해 운영 비용을 최소화했습니다. 정적 콘텐츠는 CloudFront + S3로 글로벌 캐싱하고, 서버가 필요한 기능만 서버리스로 붙이는 구조로 단순성과 비용 효율을 동시에 확보했습니다. 모든 인프라는 Terraform으로 코드화해 재현성과 변경 이력 관리를 확보했습니다.",
     },
@@ -311,6 +311,12 @@ export const projects: Project[] = [
         reason:
           "CloudFront Function 없이 AWS 관리형 정책으로 HSTS(2년)·X-Frame-Options·X-Content-Type-Options·XSS-Protection·Referrer-Policy·Permissions-Policy를 모든 응답에 일괄 적용해 코드 유지보수 없이 보안 레이어를 완성했습니다.",
       },
+      {
+        name: "Amazon EventBridge + SES",
+        role: "방문자 피드백 이벤트 처리 및 이메일 알림 발송",
+        reason:
+          "피드백 수신 Lambda와 이메일 발송 Lambda를 직접 연결하지 않고 EventBridge 커스텀 버스를 중간에 두어 두 기능을 느슨하게 분리했습니다. 향후 Slack 알림, DB 저장 등 처리를 추가할 때 기존 코드 수정 없이 Rule만 추가하면 되는 확장 구조를 확보하기 위해 이 방식을 선택했습니다. 이메일 발송은 자체 도메인(`eomkyeongmun.me`)을 SES에서 DKIM 검증 후 발신자로 사용해 신뢰도를 확보했습니다.",
+      },
     ],
     problemSolving: [
       {
@@ -338,7 +344,7 @@ export const projects: Project[] = [
       regrets:
         "Lambda Cold Start 지연이 PDF 생성 첫 요청에서 체감될 수 있는데, Provisioned Concurrency 적용 여부를 충분히 검토하지 못했습니다. Terraform 모듈 구조도 초기 설계보다 복잡해져 리팩터링이 필요한 상태입니다.",
       futureWork:
-        "Lambda Provisioned Concurrency 또는 SnapStart 적용으로 Cold Start를 줄이고, CloudWatch 알람과 연동한 이상 트래픽 탐지 체계를 추가할 계획입니다. Terraform 모듈도 환경별 재사용 가능한 구조로 정리할 예정입니다.",
+        "Lambda Provisioned Concurrency 또는 SnapStart 적용으로 Cold Start를 줄이고, CloudWatch 알람과 연동한 이상 트래픽 탐지 체계를 추가할 계획입니다. 피드백 시스템에 EventBridge Rule을 추가해 Slack 알림이나 DB 저장 등으로 확장하고, Terraform 모듈도 환경별 재사용 가능한 구조로 정리할 예정입니다.",
     },
     links: {
       github: "https://github.com/eomkyeongmun/my-portfolio",
