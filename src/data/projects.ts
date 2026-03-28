@@ -35,7 +35,7 @@ export interface Project {
   links: {
     github?: string;
     demo?: string;
-    blog?: string;
+    velog?: string;
     [key: string]: string | undefined;
   };
 }
@@ -218,7 +218,7 @@ export const projects: Project[] = [
         "Karpenter까지 포함한 완전한 GitOps화, Central VPC 보안 정책의 BLOCK/탐지 규칙 고도화, 부하 테스트 기반 비용 예측 정교화를 다음 단계로 진행할 계획입니다.",
     },
     links: {
-      blog: "https://velog.io/@eomkyeongmun/series/CJ-%EC%98%AC%EB%A6%AC%EB%B8%8C%EB%84%A4%ED%8A%B8%EC%9B%8D%EC%8A%A4-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8",
+      velog: "https://velog.io/@eomkyeongmun/series/CJ-%EC%98%AC%EB%A6%AC%EB%B8%8C%EB%84%A4%ED%8A%B8%EC%9B%8D%EC%8A%A4-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8",
     },
   },
   {
@@ -342,6 +342,7 @@ export const projects: Project[] = [
     },
     links: {
       github: "https://github.com/eomkyeongmun/my-portfolio",
+      velog: "https://velog.io/@eomkyeongmun/series/project",
     },
   },
 ];

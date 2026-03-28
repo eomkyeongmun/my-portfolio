@@ -87,10 +87,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
               Demo
             </a>
           )}
-          {project.links.blog && (
-            <a href={project.links.blog} target="_blank" rel="noopener noreferrer"
+          {project.links.velog && (
+            <a href={project.links.velog} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
-              Blog
+              Velog
             </a>
           )}
         </div>
