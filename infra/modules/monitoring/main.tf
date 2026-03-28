@@ -27,11 +27,11 @@ resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
   metric_name         = "Errors"
   dimensions          = { FunctionName = var.lambda_function_name }
   statistic           = "Sum"
-  period              = 300   # 5분
+  period              = 300
   evaluation_periods  = 1
   threshold           = 1
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  treat_missing_data  = "notBreaching" # 호출 없으면 정상으로 처리
+  treat_missing_data  = "notBreaching"
 
   alarm_actions = [aws_sns_topic.alerts.arn]
   ok_actions    = [aws_sns_topic.alerts.arn]
@@ -51,7 +51,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_duration" {
   statistic           = "Average"
   period              = 300
   evaluation_periods  = 1
-  threshold           = 45000 # 45,000ms = 45초
+  threshold           = 45000
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
 
@@ -116,7 +116,10 @@ resource "aws_cloudwatch_dashboard" "main" {
       # ── 알람 상태 패널 ──────────────────────────────────────────────────────
       {
         type   = "alarm"
-        x      = 0; y = 0; width = 24; height = 3
+        x      = 0
+        y      = 0
+        width  = 24
+        height = 3
         properties = {
           title  = "알람 상태"
           alarms = [
@@ -130,13 +133,16 @@ resource "aws_cloudwatch_dashboard" "main" {
       # ── Lambda 호출·오류·스로틀 ────────────────────────────────────────────
       {
         type   = "metric"
-        x      = 0; y = 3; width = 12; height = 6
+        x      = 0
+        y      = 3
+        width  = 12
+        height = 6
         properties = {
-          title  = "Lambda — 호출 / 오류 / Throttle"
-          region = var.aws_region
-          view   = "timeSeries"
+          title   = "Lambda — 호출 / 오류 / Throttle"
+          region  = var.aws_region
+          view    = "timeSeries"
           stacked = false
-          period = 300
+          period  = 300
           metrics = [
             ["AWS/Lambda", "Invocations", "FunctionName", var.lambda_function_name,
               { stat = "Sum", label = "호출 수" }],
@@ -150,7 +156,10 @@ resource "aws_cloudwatch_dashboard" "main" {
       # ── Lambda 실행 시간 ───────────────────────────────────────────────────
       {
         type   = "metric"
-        x      = 12; y = 3; width = 12; height = 6
+        x      = 12
+        y      = 3
+        width  = 12
+        height = 6
         properties = {
           title  = "Lambda — Duration (ms)"
           region = var.aws_region
@@ -173,7 +182,10 @@ resource "aws_cloudwatch_dashboard" "main" {
       # ── API Gateway 요청 현황 ─────────────────────────────────────────────
       {
         type   = "metric"
-        x      = 0; y = 9; width = 12; height = 6
+        x      = 0
+        y      = 9
+        width  = 12
+        height = 6
         properties = {
           title  = "API Gateway — 요청 / 4xx / 5xx"
           region = var.aws_region
@@ -192,7 +204,10 @@ resource "aws_cloudwatch_dashboard" "main" {
       # ── API Gateway 응답 시간 ─────────────────────────────────────────────
       {
         type   = "metric"
-        x      = 12; y = 9; width = 12; height = 6
+        x      = 12
+        y      = 9
+        width  = 12
+        height = 6
         properties = {
           title  = "API Gateway — Latency (ms)"
           region = var.aws_region
