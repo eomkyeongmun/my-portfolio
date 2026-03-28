@@ -218,7 +218,6 @@ export const projects: Project[] = [
         "Karpenter까지 포함한 완전한 GitOps화, Central VPC 보안 정책의 BLOCK/탐지 규칙 고도화, 부하 테스트 기반 비용 예측 정교화를 다음 단계로 진행할 계획입니다.",
     },
     links: {
-      demo: "/images/CJ.pptx", // PDF 링크
       blog: "https://velog.io/@eomkyeongmun/series/CJ-%EC%98%AC%EB%A6%AC%EB%B8%8C%EB%84%A4%ED%8A%B8%EC%9B%8D%EC%8A%A4-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8",
     },
   },
@@ -226,52 +225,108 @@ export const projects: Project[] = [
     category: "devops",
     title: "개인 포트폴리오 사이트 구축",
     period: "2026.03 ~ 진행 중",
+    thumbnail: "/images/AI.png",
     overview: {
       description:
-        "Next.js 기반 개인 포트폴리오 웹사이트. 웹 열람용 페이지와 PDF 다운로드를 함께 제공하며, AWS 인프라 위에 직접 배포·운영합니다.",
-      role: "프론트엔드 개발부터 AWS 인프라 설계·구축까지 전 과정 단독 담당",
+        "Next.js 기반 개인 포트폴리오 웹사이트. 웹 열람용 페이지와 PDF 다운로드를 함께 제공하며, S3 + CloudFront + Lambda 서버리스 구조로 AWS에 직접 배포·운영합니다.",
+      role: "Next.js 프론트엔드 개발, Tailwind CSS 디자인, Puppeteer 기반 PDF 생성, Terraform IaC 인프라 구축, GitHub Actions CI/CD 파이프라인 구성까지 전 과정 단독 담당",
     },
     architecture: {
-      diagram: "/images/projects/portfolio-architecture.png",
+      diagram: "/images/AI.png",
       description:
-        "Next.js 앱을 S3 + CloudFront로 정적 배포하고, PDF 생성 요청은 API Gateway → Lambda(Puppeteer) 구조로 처리합니다. WAF를 CloudFront 앞단에 붙여 보안을 강화하고, X-Ray로 API Gateway~Lambda 구간 분산 추적을 구성했습니다.",
+        "사용자는 외부 DNS(CNAME) → CloudFront(OAC) → S3 경로로 정적 페이지를 제공받습니다. PDF 다운로드 요청은 CloudFront → API Gateway → Lambda(Puppeteer) 흐름으로 처리됩니다. CloudFront 앞단에 WAF를 배치해 L7 보안을 확보했고, ACM으로 HTTPS 인증서를 관리합니다. Lambda는 ECR에 저장된 컨테이너 이미지로 실행되며, X-Ray로 API Gateway ~ Lambda 구간의 분산 추적을 구성했습니다. GitHub Actions가 코드 변경 시 S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → 함수 업데이트를 자동으로 수행합니다.",
       reasoning:
-        "정적 사이트에 서버가 필요한 PDF 생성 기능만 Lambda로 분리해 운영 비용을 최소화했습니다. CloudFront + S3 조합으로 글로벌 CDN을 무서버로 구성했습니다.",
+        "PDF 생성처럼 간헐적으로 발생하는 무거운 작업을 상시 서버 없이 Lambda로 분리해 운영 비용을 최소화했습니다. 정적 콘텐츠는 CloudFront + S3로 글로벌 캐싱하고, 서버가 필요한 기능만 서버리스로 붙이는 구조로 단순성과 비용 효율을 동시에 확보했습니다. 모든 인프라는 Terraform으로 코드화해 재현성과 변경 이력 관리를 확보했습니다.",
     },
     techStack: [
       {
-        name: "Next.js / React / TypeScript",
-        role: "포트폴리오 웹 페이지 구현",
-        reason: "App Router 기반의 정적 생성과 Tailwind CSS와의 궁합이 좋아 선택했습니다.",
-      },
-      {
-        name: "AWS S3 + CloudFront + WAF",
-        role: "정적 파일 배포 및 CDN, 보안",
-        reason: "서버 없이 글로벌 CDN을 구성하고 WAF로 기본 보안을 확보하기 위해 선택했습니다.",
-      },
-      {
-        name: "AWS Lambda + Puppeteer",
-        role: "PDF 생성 서버리스 함수",
+        name: "Next.js 16 / React / TypeScript",
+        role: "포트폴리오 웹 페이지 및 PDF 전용 렌더링 페이지 구현",
         reason:
-          "PDF 생성은 요청이 드문 작업이라 상시 서버 대신 Lambda로 분리해 비용을 최소화했습니다.",
+          "App Router 기반 정적 생성(SSG)으로 S3 배포에 최적화되고, TypeScript로 데이터 구조를 타입 안전하게 관리할 수 있었습니다. Tailwind CSS v4와의 궁합도 선택 이유 중 하나였습니다.",
       },
       {
-        name: "Terraform",
-        role: "인프라 전체 코드 관리",
-        reason: "콘솔 수동 작업 없이 인프라를 재현 가능하게 관리하기 위해 사용했습니다.",
+        name: "Tailwind CSS v4",
+        role: "반응형 UI 스타일링",
+        reason:
+          "CSS-first 설정 방식으로 설정 파일 없이 globals.css에서 바로 커스텀 테마를 정의할 수 있었고, 다크 모드 지원이 클래스 기반으로 간단하게 구현됩니다.",
+      },
+      {
+        name: "AWS S3 + CloudFront + OAC",
+        role: "정적 파일 원본 저장 및 글로벌 CDN 배포",
+        reason:
+          "S3를 퍼블릭으로 열지 않고 OAC(Origin Access Control)로 CloudFront에서만 접근 가능하도록 구성해 보안을 강화했습니다. 직접 도메인 DNS는 외부 공급자에서 관리하며 CNAME으로 CloudFront에 연결했습니다.",
+      },
+      {
+        name: "AWS WAF",
+        role: "CloudFront 앞단 L7 보안",
+        reason:
+          "관리형 규칙셋으로 SQL 인젝션, XSS 등 일반적인 웹 공격을 차단하고, 개인 포트폴리오임에도 기본 보안 레이어를 갖추기 위해 적용했습니다.",
+      },
+      {
+        name: "AWS Lambda + Puppeteer (컨테이너)",
+        role: "서버리스 PDF 생성",
+        reason:
+          "Puppeteer는 Chromium 바이너리가 필요해 일반 Lambda 패키지 크기 제한을 초과합니다. 컨테이너 이미지 기반 Lambda로 배포해 이 제약을 해결했습니다. PDF 생성은 간헐적 요청이므로 상시 서버 대신 Lambda가 비용 효율적입니다.",
+      },
+      {
+        name: "AWS API Gateway",
+        role: "Lambda 호출 HTTP 엔드포인트",
+        reason:
+          "CloudFront에서 Lambda를 직접 호출하는 대신 API Gateway를 두어 요청 라우팅, 인증 확장, X-Ray 추적 연동을 용이하게 했습니다.",
+      },
+      {
+        name: "AWS ECR",
+        role: "Lambda 컨테이너 이미지 저장소",
+        reason:
+          "Lambda 컨테이너 배포에 필요한 이미지를 AWS 내부 레지스트리에서 관리해 배포 지연을 최소화하고 이미지 버전 관리를 체계화했습니다.",
       },
       {
         name: "AWS X-Ray",
         role: "API Gateway → Lambda 구간 분산 추적",
         reason:
-          "단순 에러 로그로는 알 수 없는 Lambda Cold Start, Puppeteer 렌더링 등 구간별 지연 병목을 시각화하기 위해 도입했습니다.",
+          "단순 에러 로그로는 파악하기 어려운 Lambda Cold Start 지연, Puppeteer 렌더링 구간 병목을 시각화해 성능 문제의 원인을 특정하기 위해 도입했습니다.",
+      },
+      {
+        name: "Terraform",
+        role: "전체 인프라 IaC 관리",
+        reason:
+          "CloudFront, S3, WAF, API Gateway, Lambda, ECR, ACM, IAM 등 모든 리소스를 코드로 정의해 콘솔 수동 작업 없이 재현 가능한 인프라를 유지했습니다. 모듈 단위로 분리해 환경별 확장을 고려했습니다.",
+      },
+      {
+        name: "GitHub Actions",
+        role: "프론트엔드 및 Lambda 배포 자동화",
+        reason:
+          "코드 push 시 Next.js 빌드 → S3 업로드 → CloudFront 캐시 무효화, Lambda 이미지 빌드 → ECR 푸시 → Lambda 함수 업데이트를 자동화해 수동 배포를 완전히 제거했습니다.",
       },
     ],
-    problemSolving: [],
+    problemSolving: [
+      {
+        issue: "Lambda에서 Puppeteer로 PDF를 생성할 때 한글 텍스트가 □□□ 로 깨지는 문제가 발생했습니다.",
+        analysis:
+          "Puppeteer가 사용하는 Chromium은 시스템 폰트에 의존합니다. Lambda 실행 환경(Amazon Linux 2)에는 한글 폰트가 기본 설치되어 있지 않아, 한글 문자를 렌더링할 폰트를 찾지 못하고 □로 출력했습니다.",
+        solution:
+          "Lambda 컨테이너 이미지 Dockerfile에 Noto Sans KR 폰트를 직접 포함시켜 빌드했습니다. 또한 /portfolio/print 페이지에서 Google Fonts로 폰트를 로드하고, Puppeteer가 폰트 로딩 완료를 기다린 후 PDF를 캡처하도록 waitForFunction을 추가했습니다.",
+        result:
+          "한글 폰트가 정상적으로 렌더링되어 PDF에서 모든 텍스트가 올바르게 출력됩니다. 폰트를 이미지에 번들링해 외부 네트워크 의존 없이 일관된 결과를 보장합니다.",
+      },
+      {
+        issue: "GitHub Actions에서 Lambda 컨테이너 이미지를 ECR에 푸시한 뒤 Lambda 함수가 새 이미지를 반영하지 않는 경우가 있었습니다.",
+        analysis:
+          "ECR에 latest 태그로 이미지를 push해도 Lambda는 함수 설정이 변경되지 않으면 기존에 캐시된 이미지를 계속 사용합니다. Lambda가 새 이미지를 인식하려면 함수 자체를 업데이트하는 API 호출이 필요합니다.",
+        solution:
+          "GitHub Actions 워크플로에 ECR 푸시 후 aws lambda update-function-code 단계를 추가해 매 배포마다 Lambda가 최신 ECR 이미지를 참조하도록 강제했습니다.",
+        result:
+          "코드 push 시 Lambda가 항상 최신 이미지로 업데이트됩니다. 배포 누락 없이 변경 사항이 즉시 반영됩니다.",
+      },
+    ],
     retrospective: {
-      improvements: "추후 작성 예정",
-      regrets: "추후 작성 예정",
-      futureWork: "추후 작성 예정",
+      improvements:
+        "프론트엔드 개발부터 서버리스 백엔드, IaC, CI/CD까지 하나의 서비스를 혼자서 끝까지 구축하며 전체 흐름을 직접 연결했습니다. S3 OAC, WAF, X-Ray 등 실제 운영 수준의 보안·관측 레이어를 적용해 단순 배포를 넘어선 구조를 경험했습니다.",
+      regrets:
+        "Lambda Cold Start 지연이 PDF 생성 첫 요청에서 체감될 수 있는데, Provisioned Concurrency 적용 여부를 충분히 검토하지 못했습니다. Terraform 모듈 구조도 초기 설계보다 복잡해져 리팩터링이 필요한 상태입니다.",
+      futureWork:
+        "Lambda Provisioned Concurrency 또는 SnapStart 적용으로 Cold Start를 줄이고, CloudWatch 알람과 연동한 이상 트래픽 탐지 체계를 추가할 계획입니다. Terraform 모듈도 환경별 재사용 가능한 구조로 정리할 예정입니다.",
     },
     links: {
       github: "https://github.com/eomkyeongmun/my-portfolio",

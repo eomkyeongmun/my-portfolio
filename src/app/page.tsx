@@ -105,6 +105,14 @@ export default function Home() {
               {profile.links.email}
             </span>
           )}
+          {profile.links.phone && (
+            <span className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 select-all">
+              <svg aria-hidden="true" className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              {profile.links.phone}
+            </span>
+          )}
         </div>
       </section>
 
@@ -182,6 +190,23 @@ export default function Home() {
                 </div>
                 <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 shrink-0 sm:pt-0.5">
                   {item.period}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Clubs ────────────────────────────────────────── */}
+      {profile.clubs && profile.clubs.length > 0 && (
+        <section>
+          <SectionLabel>activities</SectionLabel>
+          <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4 space-y-3">
+            {profile.clubs.map((club, idx) => (
+              <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-8">
+                <p className="font-semibold text-neutral-900 dark:text-neutral-100">{club.name}</p>
+                <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
+                  {club.period}
                 </p>
               </div>
             ))}
@@ -301,7 +326,7 @@ export default function Home() {
               className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors flex flex-col gap-3"
             >
               <div>
-                <span className={`font-mono text-xs px-2 py-0.5 rounded ${categoryColor[h.category] ?? categoryColor["기타"]}`}>
+                <span className={`text-xs px-2 py-0.5 rounded ${categoryColor[h.category] ?? categoryColor["기타"]}`}>
                   {h.category}
                 </span>
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm mt-2 leading-snug">
@@ -309,17 +334,17 @@ export default function Home() {
                 </h3>
               </div>
               <hr className="border-neutral-200 dark:border-neutral-700" />
-              <dl className="space-y-2 text-xs pt-3">
-                <div className="flex gap-2">
-                  <dt className="shrink-0 whitespace-nowrap font-mono text-neutral-600 dark:text-neutral-300 font-medium">문제</dt>
+              <dl className="flex-1 flex flex-col justify-between text-xs">
+                <div className="flex gap-2 py-2">
+                  <dt className="shrink-0 w-8 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">문제</dt>
                   <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed">{h.problem}</dd>
                 </div>
-                <div className="flex gap-2">
-                  <dt className="shrink-0 whitespace-nowrap font-mono text-neutral-600 dark:text-neutral-300 font-medium">해결</dt>
+                <div className="flex gap-2 py-2 border-t border-neutral-200 dark:border-neutral-700">
+                  <dt className="shrink-0 w-8 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">해결</dt>
                   <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed">{h.action}</dd>
                 </div>
-                <div className="flex gap-2">
-                  <dt className="shrink-0 whitespace-nowrap font-mono text-neutral-600 dark:text-neutral-300 font-medium">결과</dt>
+                <div className="flex gap-2 py-2 border-t border-neutral-200 dark:border-neutral-700 min-h-[7rem]">
+                  <dt className="shrink-0 w-8 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">결과</dt>
                   <dd className="text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium">{h.result}</dd>
                 </div>
               </dl>
