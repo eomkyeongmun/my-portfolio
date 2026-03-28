@@ -123,7 +123,7 @@ export const projects: Project[] = [
     },
     links: {
       github: "https://github.com/eomkyeongmun/Newgnal-Backend",
-      demo: "/images/tave_pdf.pdf", // PDF 링크
+      velog: "/images/tave_pdf.pdf", // PDF 링크
     },
   },
   {
@@ -224,7 +224,7 @@ export const projects: Project[] = [
   {
     category: "devops",
     title: "개인 포트폴리오 사이트 구축",
-    period: "2026.03 ~ 진행 중",
+    period: "2026.03 ~ 2026.03",
     thumbnail: "/images/real.png",
     overview: {
       description:
