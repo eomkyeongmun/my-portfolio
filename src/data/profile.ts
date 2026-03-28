@@ -69,7 +69,7 @@ export const profile: Profile = {
   clubs: [
     { name: "FC TOTO (축구중앙동아리)", period: "2022.03 - 2025.08" },
     { name: "링커스 (직무탐색동아리)", period: "2024.09 - 2024.12" },
-    { name: "TAVE 개발 동아리", period: "2025.03 - 2025.07" },
+    { name: "TAVE (개발 동아리)", period: "2025.03 - 2025.07" },
     { name: "FC 정통 (축구소모임 주장)", period: "2025.03 - 2026.02" },
   ],
   keywords: ["AWS / Cloud", "Docker / DevOps", "Infra Architecture"],
