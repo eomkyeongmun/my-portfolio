@@ -49,6 +49,16 @@ output "lambda_function_name" {
   value       = module.lambda.lambda_function_name
 }
 
+output "monitoring_sns_topic_arn" {
+  description = "알람 SNS 토픽 ARN (이메일·Slack 구독 추가 시 사용)"
+  value       = module.monitoring.sns_topic_arn
+}
+
+output "cloudwatch_dashboard_name" {
+  description = "CloudWatch 대시보드 이름"
+  value       = module.monitoring.dashboard_name
+}
+
 output "github_actions_access_key_id" {
   description = "GitHub Actions 배포용 IAM Access Key ID"
   value       = module.iam.github_actions_access_key_id
