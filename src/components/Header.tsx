@@ -91,6 +91,16 @@ export function Header() {
             )}
           </div>
 
+          <Link
+            href="/contact"
+            className={`px-3 py-1.5 text-sm rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 dark:focus-visible:outline-neutral-100 ${pathname === "/contact"
+                ? "text-neutral-900 dark:text-neutral-100 font-medium"
+                : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+              }`}
+          >
+            Contact
+          </Link>
+
           {/* PDF dropdown */}
           <div className="relative" ref={dropdownRef} onKeyDown={handleDropdownKeyDown}>
             <button

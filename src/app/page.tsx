@@ -4,7 +4,6 @@ import { skills } from "@/data/skills";
 import { projects } from "@/data/projects";
 import { highlights } from "@/data/highlights";
 import { certifications } from "@/data/certifications";
-import FeedbackForm from "@/components/FeedbackForm";
 
 const categoryColor: Record<string, string> = {
   장애대응: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -354,7 +353,6 @@ export default function Home() {
         </div>
       </section>
 
-      <FeedbackForm />
 
     </div>
   );

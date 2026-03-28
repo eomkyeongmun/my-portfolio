@@ -42,12 +42,7 @@ export default function FeedbackForm() {
   }
 
   return (
-    <section className="mt-16 border-t border-neutral-200 dark:border-neutral-700 pt-12">
-      <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">피드백</h2>
-      <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
-        방문해 주셔서 감사합니다. 자유롭게 의견을 남겨주세요.
-      </p>
-
+    <div>
       {status === "success" ? (
         <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-6 text-emerald-700 dark:text-emerald-300">
           <p className="font-semibold">피드백을 보내주셔서 감사합니다!</p>
@@ -122,6 +117,6 @@ export default function FeedbackForm() {
           </button>
         </form>
       )}
-    </section>
+    </div>
   );
 }
