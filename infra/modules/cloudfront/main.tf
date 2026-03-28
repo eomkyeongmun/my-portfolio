@@ -53,6 +53,52 @@ resource "aws_cloudfront_function" "rewrite_index" {
   EOF
 }
 
+# 보안 헤더 응답 정책
+# CloudFront가 모든 응답에 보안 관련 HTTP 헤더를 자동으로 추가한다.
+resource "aws_cloudfront_response_headers_policy" "security_headers" {
+  name    = "${var.project_name}-security-headers-${var.environment}"
+  comment = "Security headers for ${var.project_name}"
+
+  security_headers_config {
+    # HTTPS 강제 (2년) — preload list 등록 기준 충족
+    strict_transport_security {
+      access_control_max_age_sec = 63072000
+      include_subdomains         = true
+      preload                    = true
+      override                   = true
+    }
+    # MIME 타입 스니핑 차단
+    content_type_options {
+      override = true
+    }
+    # iframe 삽입 차단 (클릭재킹 방지)
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    # XSS 필터 활성화
+    xss_protection {
+      mode_block = true
+      protection = true
+      override   = true
+    }
+    # Referrer 정책 — 동일 출처만 전체 URL 전달
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = true
+    }
+  }
+
+  # 브라우저 기능 접근 제한
+  custom_headers_config {
+    items {
+      header   = "Permissions-Policy"
+      value    = "camera=(), microphone=(), geolocation=()"
+      override = true
+    }
+  }
+}
+
 # 관리형 캐시 정책 — CachingOptimized (S3 정적 파일에 최적)
 data "aws_cloudfront_cache_policy" "caching_optimized" {
   name = "Managed-CachingOptimized"
@@ -88,8 +134,9 @@ resource "aws_cloudfront_distribution" "website" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_optimized.id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.cors_s3.id
+    cache_policy_id             = data.aws_cloudfront_cache_policy.caching_optimized.id
+    origin_request_policy_id    = data.aws_cloudfront_origin_request_policy.cors_s3.id
+    response_headers_policy_id  = aws_cloudfront_response_headers_policy.security_headers.id
 
     function_association {
       event_type   = "viewer-request"

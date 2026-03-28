@@ -32,6 +32,12 @@ variable "domain_name" {
   default     = null
 }
 
+variable "alarm_email" {
+  description = "CloudWatch 알람 수신 이메일 주소 (null이면 SNS 토픽만 생성하고 구독 없음)"
+  type        = string
+  default     = null
+}
+
 variable "lambda_image_uri" {
   description = <<-EOT
     Lambda 컨테이너 이미지 URI (ECR).
