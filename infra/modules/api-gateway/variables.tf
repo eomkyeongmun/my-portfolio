@@ -23,3 +23,13 @@ variable "domain_name" {
   type        = string
   default     = null
 }
+
+variable "feedback_lambda_arn" {
+  description = "feedback-handler Lambda 함수 ARN"
+  type        = string
+}
+
+variable "feedback_lambda_invoke_arn" {
+  description = "feedback-handler Lambda Invoke ARN"
+  type        = string
+}

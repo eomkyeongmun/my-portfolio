@@ -38,6 +38,18 @@ variable "alarm_email" {
   default     = null
 }
 
+variable "feedback_email" {
+  description = "피드백 수신 이메일 주소"
+  type        = string
+  default     = "eomkyeongmun@naver.com"
+}
+
+variable "sender_email" {
+  description = "SES 발신 이메일 주소 (SES 검증된 도메인이어야 함)"
+  type        = string
+  default     = "noreply@eomkyeongmun.me"
+}
+
 variable "lambda_image_uri" {
   description = <<-EOT
     Lambda 컨테이너 이미지 URI (ECR).

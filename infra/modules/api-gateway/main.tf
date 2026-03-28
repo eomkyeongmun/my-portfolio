@@ -6,7 +6,7 @@ resource "aws_apigatewayv2_api" "pdf_api" {
 
   cors_configuration {
     allow_headers = ["Content-Type", "Authorization"]
-    allow_methods = ["GET", "OPTIONS"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
     allow_origins = var.domain_name != null ? ["https://${var.domain_name}"] : ["*"]
     max_age       = 3600
   }
@@ -68,11 +68,35 @@ resource "aws_cloudwatch_log_group" "api_gateway" {
   }
 }
 
-# Lambda 실행 권한 — API Gateway가 Lambda를 호출할 수 있도록
+# Lambda 실행 권한 — API Gateway가 PDF Lambda를 호출할 수 있도록
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = var.lambda_arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.pdf_api.execution_arn}/*/*"
+}
+
+# feedback-handler 통합
+resource "aws_apigatewayv2_integration" "feedback_lambda" {
+  api_id                 = aws_apigatewayv2_api.pdf_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.feedback_lambda_invoke_arn
+  payload_format_version = "2.0"
+}
+
+# 라우트 — POST /api/feedback
+resource "aws_apigatewayv2_route" "feedback" {
+  api_id    = aws_apigatewayv2_api.pdf_api.id
+  route_key = "POST /api/feedback"
+  target    = "integrations/${aws_apigatewayv2_integration.feedback_lambda.id}"
+}
+
+# Lambda 실행 권한 — API Gateway가 feedback Lambda를 호출할 수 있도록
+resource "aws_lambda_permission" "api_gateway_feedback" {
+  statement_id  = "AllowAPIGatewayInvokeFeedback"
+  action        = "lambda:InvokeFunction"
+  function_name = var.feedback_lambda_arn
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.pdf_api.execution_arn}/*/*"
 }

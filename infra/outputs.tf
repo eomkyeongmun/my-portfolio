@@ -70,3 +70,13 @@ output "github_actions_secret_access_key" {
   value       = module.iam.github_actions_secret_access_key
   sensitive   = true
 }
+
+output "ses_domain_verification_token" {
+  description = "외부 DNS에 추가할 SES 도메인 검증 TXT 레코드 값 (_amazonses.eomkyeongmun.me)"
+  value       = module.feedback.ses_domain_verification_token
+}
+
+output "ses_dkim_cname_records" {
+  description = "외부 DNS에 추가할 SES DKIM CNAME 레코드 3개 (이름 → 값)"
+  value       = module.feedback.ses_dkim_cname_records
+}

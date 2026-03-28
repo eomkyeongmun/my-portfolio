@@ -106,13 +106,24 @@ module "lambda" {
   site_url         = module.cloudfront.distribution_domain_name
 }
 
+module "feedback" {
+  source         = "./modules/feedback"
+  project_name   = var.project_name
+  environment    = var.environment
+  feedback_email = var.feedback_email
+  sender_email   = var.sender_email
+  allowed_origin = var.domain_name != null ? "https://${var.domain_name}" : "*"
+}
+
 module "api_gateway" {
-  source            = "./modules/api-gateway"
-  project_name      = var.project_name
-  environment       = var.environment
-  lambda_arn        = module.lambda.lambda_arn
-  lambda_invoke_arn = module.lambda.lambda_invoke_arn
-  domain_name       = var.domain_name
+  source                     = "./modules/api-gateway"
+  project_name               = var.project_name
+  environment                = var.environment
+  lambda_arn                 = module.lambda.lambda_arn
+  lambda_invoke_arn          = module.lambda.lambda_invoke_arn
+  domain_name                = var.domain_name
+  feedback_lambda_arn        = module.feedback.feedback_lambda_arn
+  feedback_lambda_invoke_arn = module.feedback.feedback_lambda_invoke_arn
 }
 
 module "monitoring" {
