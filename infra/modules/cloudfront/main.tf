@@ -46,7 +46,15 @@ resource "aws_cloudfront_function" "rewrite_index" {
       const request = event.request;
       const uri = request.uri;
       if (uri.endsWith('/')) {
+        // 디렉터리 경로 (/path/) → /path/index.html
         request.uri = uri + 'index.html';
+      } else {
+        // 마지막 경로 세그먼트에 확장자가 없으면 디렉터리로 간주
+        // 예: /projects/backend → /projects/backend/index.html
+        const lastSegment = uri.substring(uri.lastIndexOf('/') + 1);
+        if (!lastSegment.includes('.')) {
+          request.uri = uri + '/index.html';
+        }
       }
       return request;
     }
