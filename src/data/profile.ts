@@ -25,6 +25,7 @@ export interface Club {
 
 export interface Profile {
   name: string;
+  birthdate?: string;
   title: string;
   summary: string;
   education: Education;
@@ -42,6 +43,7 @@ export interface Profile {
 
 export const profile: Profile = {
   name: "엄경문",
+  birthdate: "2002.03.21",
   education: {
     school: "동국대학교",
     major: "정보통신공학과",

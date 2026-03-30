@@ -50,9 +50,14 @@ export default function Home() {
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-4">
           {profile.name}
         </h1>
-        <p className="font-mono text-sm text-neutral-700 dark:text-neutral-300 mb-6">
+        <p className="font-mono text-sm text-neutral-700 dark:text-neutral-300 mb-2">
           {profile.title}
         </p>
+        {profile.birthdate && (
+          <p className="font-mono text-xs text-neutral-400 dark:text-neutral-500 mb-6">
+            {profile.birthdate}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2 mb-8">
           {profile.keywords.map((kw, i) => {
             const colors = [
