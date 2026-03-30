@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { projects } from "@/data/projects";
+import { PdfDownloadButton } from "@/components/PdfDownloadButton";
 
 export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.category }));
@@ -72,6 +73,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         </div>
         {/* Links */}
         <div className="flex flex-wrap items-center gap-3 mt-6">
+          <PdfDownloadButton slug={project.category} projectTitle={project.title} variant="outline" />
           {project.links.github && (
             <a href={project.links.github} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 dark:focus-visible:outline-neutral-100 rounded-sm">
