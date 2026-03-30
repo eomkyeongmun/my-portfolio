@@ -28,7 +28,7 @@ export const highlights: Highlight[] = [
     category: "비용최적화",
     problem: "환경별 NAT Gateway를 각각 운영해 고정 비용이 중복됐고, 보안·로그 관측 지점이 분산돼 운영 부담이 커졌습니다.",
     action: "Central VPC 중심으로 egress 경로를 재설계하고 TGW로 각 VPC를 연결해 공통 서비스와 관제 지점을 중앙화했습니다.",
-    result: "Dev·QA·Prod·DR 4개 환경의 NAT를 Central VPC 1개로 통합해 고정 비용을 절감하고 단일 관제 체계를 확보했습니다.",
+    result: "Dev·QA·Prod 3개 환경의 NAT를 Central VPC 1개로 통합해 고정 비용을 절감하고 단일 관제 체계를 확보했습니다.",
   },
   {
     title: "멀티스테이지 Docker 빌드로 이미지 경량화",
