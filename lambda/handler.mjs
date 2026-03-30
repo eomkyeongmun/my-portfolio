@@ -1,3 +1,4 @@
+import AWSXRay from "aws-xray-sdk-core";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
@@ -19,28 +20,37 @@ export const handler = async (event) => {
 
   const slug = event.pathParameters?.slug ?? "portfolio";
   const printUrl = `${SITE_URL}/portfolio/print/${slug}/`;
+  const seg = AWSXRay.getSegment();
 
   let browser;
   try {
+    const subLaunch = seg.addNewSubsegment("puppeteer.launch");
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     });
+    subLaunch.close();
 
     const page = await browser.newPage();
 
-    // 네트워크 요청 완료 + 폰트 로딩 완료까지 대기
+    const subGoto = seg.addNewSubsegment("page.goto");
     await page.goto(printUrl, { waitUntil: "networkidle0", timeout: 30_000 });
-    await page.evaluateHandle("document.fonts.ready");
+    subGoto.close();
 
+    const subFonts = seg.addNewSubsegment("fonts.ready");
+    await page.evaluateHandle("document.fonts.ready");
+    subFonts.close();
+
+    const subPdf = seg.addNewSubsegment("page.pdf");
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
       // print 페이지 CSS(px-[14mm] py-[16mm])가 내부 여백을 처리하므로 마진은 0
       margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
+    subPdf.close();
 
     const filename = encodeURIComponent(`${slug}_포트폴리오.pdf`);
 

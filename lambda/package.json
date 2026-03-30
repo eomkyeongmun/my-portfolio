@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@sparticuz/chromium": "^131.0.1",
+    "aws-xray-sdk-core": "^3",
     "puppeteer-core": "^24.0.0"
   }
 }
