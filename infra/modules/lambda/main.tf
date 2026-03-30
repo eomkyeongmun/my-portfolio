@@ -67,10 +67,11 @@ resource "aws_lambda_function" "pdf_generator" {
 
   environment {
     variables = {
-      S3_BUCKET    = var.s3_bucket_name
-      ENVIRONMENT  = var.environment
-      PROJECT_NAME = var.project_name
-      SITE_URL     = "https://${var.site_url}"  # CloudFront 도메인 — print 페이지 렌더링 대상
+      S3_BUCKET                = var.s3_bucket_name
+      ENVIRONMENT              = var.environment
+      PROJECT_NAME             = var.project_name
+      SITE_URL                 = "https://${var.site_url}"  # CloudFront 도메인 — print 페이지 렌더링 대상
+      AWS_XRAY_CONTEXT_MISSING = "LOG_ERROR"
     }
   }
 
