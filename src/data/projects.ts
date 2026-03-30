@@ -224,7 +224,7 @@ export const projects: Project[] = [
   {
     category: "devops",
     title: "개인 포트폴리오 사이트 구축",
-    period: "2026.03 ~ 2026.03",
+    period: "2026.03 ~",
     thumbnail: "/images/real.png",
     overview: {
       description:
@@ -327,6 +327,15 @@ export const projects: Project[] = [
           "Lambda 컨테이너 이미지 Dockerfile에 Noto Sans KR 폰트를 직접 포함시켜 빌드했습니다. 또한 /portfolio/print 페이지에서 Google Fonts로 폰트를 로드하고, Puppeteer가 폰트 로딩 완료를 기다린 후 PDF를 캡처하도록 waitForFunction을 추가했습니다.",
         result:
           "한글 폰트가 정상적으로 렌더링되어 PDF에서 모든 텍스트가 올바르게 출력됩니다. 폰트를 이미지에 번들링해 외부 네트워크 의존 없이 일관된 결과를 보장합니다.",
+      },
+      {
+        issue: "배포 후 프로젝트 상세 페이지에서 뒤로가기 또는 홈 링크 클릭 시 홈 페이지 대신 프로젝트 페이지로 다시 리다이렉트되는 문제가 발생했습니다.",
+        analysis:
+          "Next.js App Router의 클라이언트 네비게이션은 RSC(React Server Component) 페이로드 파일을 통해 서버 컴포넌트 렌더링 결과를 받아옵니다. 그런데 GitHub Actions에서 S3에 업로드 시 모든 정적 파일에 Cache-Control: public, max-age=31536000, immutable을 일괄 적용했고, RSC 페이로드 파일(_next/static/ 경로)도 여기에 포함되었습니다. 배포 후 CloudFront 캐시 무효화를 수행해도 브라우저에 이미 캐시된 이전 RSC 페이로드가 남아 있으면 클라이언트가 오래된 라우팅 정보를 참조해 잘못된 페이지로 이동했습니다.",
+        solution:
+          "S3 업로드 단계에서 RSC 페이로드가 포함된 경로와 일반 정적 에셋 경로를 분리해 Cache-Control을 다르게 적용했습니다. HTML과 RSC 페이로드(_next/static/chunks/ 중 런타임 관련 파일)에는 no-cache를 적용해 항상 최신 값을 참조하도록 하고, 콘텐츠 해시가 포함된 JS·CSS 파일에만 immutable을 유지해 캐시 효율을 손상시키지 않았습니다.",
+        result:
+          "배포 후 페이지 이동 시 발생하던 홈 리다이렉트 문제가 해결되었습니다. RSC 페이로드는 항상 최신 서버 컴포넌트 결과를 참조하고, 정적 에셋은 기존과 동일하게 장기 캐시를 유지합니다.",
       },
       {
         issue: "GitHub Actions에서 Lambda 컨테이너 이미지를 ECR에 푸시한 뒤 Lambda 함수가 새 이미지를 반영하지 않는 경우가 있었습니다.",
