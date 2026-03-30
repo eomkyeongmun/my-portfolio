@@ -60,9 +60,10 @@ jobs:
         run: npm ci
 
       - name: Build (next build → out/)
-        # NEXT_PUBLIC_PDF_API_URL: 정적 빌드 시 클라이언트 코드에 API Gateway URL을 주입
+        # NEXT_PUBLIC_*: 정적 빌드 시 클라이언트 코드에 API Gateway URL을 주입
         env:
           NEXT_PUBLIC_PDF_API_URL: ${{ secrets.PDF_API_URL }}
+          NEXT_PUBLIC_FEEDBACK_API_URL: ${{ secrets.FEEDBACK_API_URL }}
         run: npm run build
 
       - name: Configure AWS credentials
