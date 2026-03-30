@@ -1,6 +1,7 @@
 export interface Education {
   school: string;
   major: string;
+  period?: string;
   gpa: string;
   majorGpa: string;
 }
@@ -47,6 +48,7 @@ export const profile: Profile = {
   education: {
     school: "동국대학교",
     major: "정보통신공학과",
+    period: "2021.03 - 2027.02",
     gpa: "4.08 / 4.5",
     majorGpa: "4.25",
   },

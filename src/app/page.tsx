@@ -138,6 +138,9 @@ export default function Home() {
               <div>
                 <p className="font-semibold text-neutral-900 dark:text-neutral-100">{profile.education.school}</p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{profile.education.major}</p>
+                {profile.education.period && (
+                  <p className="font-mono text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">{profile.education.period}</p>
+                )}
               </div>
               <div className="sm:ml-auto font-mono text-sm text-neutral-500 dark:text-neutral-400 space-y-0.5">
                 <p>GPA <span className="text-neutral-800 dark:text-neutral-200">{profile.education.gpa}</span></p>
