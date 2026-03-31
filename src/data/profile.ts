@@ -24,6 +24,12 @@ export interface Club {
   period: string;
 }
 
+export interface MilitaryService {
+  branch: string;   // 병과/군종 (예: "육군 병장")
+  period: string;   // 복무 기간
+  status: "completed" | "exempted" | "in_progress";
+}
+
 export interface Profile {
   name: string;
   birthdate?: string;
@@ -33,6 +39,7 @@ export interface Profile {
   bootcamp?: Bootcamp[];
   experience?: Experience[];
   clubs?: Club[];
+  militaryService?: MilitaryService;
   keywords: string[];
   links: {
     email?: string;
@@ -76,6 +83,11 @@ export const profile: Profile = {
     { name: "TAVE (개발 동아리)", period: "2025.03 - 2025.07" },
     { name: "FC 정통 (축구소모임 주장)", period: "2025.03 - 2026.02" },
   ],
+  militaryService: {
+    branch: "육군 병장",
+    period: "2022.05.30 - 2023.11.29",
+    status: "completed",
+  },
   keywords: ["AWS / Cloud", "Docker / DevOps", "Infra Architecture"],
   links: {
     email: "eomkyeongmun@naver.com",

@@ -1,34 +1,33 @@
 import Link from "next/link";
-import { profile } from "@/data/profile";
-import { skills } from "@/data/skills";
-import { projects } from "@/data/projects";
-import { highlights } from "@/data/highlights";
-import { certifications } from "@/data/certifications";
+import { profile } from "@/data/en/profile";
+import { skills } from "@/data/en/skills";
+import { projects } from "@/data/en/projects";
+import { highlights } from "@/data/en/highlights";
+import { certifications } from "@/data/en/certifications";
 
 const categoryColor: Record<string, string> = {
-  장애대응: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  CICD: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  모니터링: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
-  비용최적화: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  트래픽: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  성능개선: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
-  기타: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
+  "Incident Response": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  "CI/CD":             "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  Monitoring:          "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+  "Cost Optimization": "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  Traffic:             "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  Performance:         "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
+  Other:               "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
 };
 
 const skillCategoryColor: Record<string, string> = {
-  Backend:           "bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+  Backend:            "bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
   "Infra / Platform": "bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
-  "CI/CD & GitOps":  "bg-cyan-200 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300",
-  Observability:     "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
-  Security:          "bg-green-200 text-green-800 dark:bg-green-900/50 dark:text-green-300",
+  "CI/CD & GitOps":   "bg-cyan-200 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300",
+  Observability:      "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
+  Security:           "bg-green-200 text-green-800 dark:bg-green-900/50 dark:text-green-300",
 };
 
 const projectCategoryColor: Record<string, string> = {
-  backend: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  backend:        "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   infrastructure: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  devops: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
+  devops:         "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
 };
-
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -41,7 +40,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Home() {
+export default function HomeEn() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 space-y-12">
 
@@ -144,7 +143,7 @@ export default function Home() {
               </div>
               <div className="sm:ml-auto font-mono text-sm text-neutral-500 dark:text-neutral-400 space-y-0.5">
                 <p>GPA <span className="text-neutral-800 dark:text-neutral-200">{profile.education.gpa}</span></p>
-                <p>Major <span className="text-neutral-800 dark:text-neutral-200">{profile.education.majorGpa}</span></p>
+                <p>Major GPA <span className="text-neutral-800 dark:text-neutral-200">{profile.education.majorGpa}</span></p>
               </div>
             </div>
           </div>
@@ -205,7 +204,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* ── Clubs ────────────────────────────────────────── */}
+      {/* ── Activities ───────────────────────────────────── */}
       {profile.clubs && profile.clubs.length > 0 && (
         <section>
           <SectionLabel>activities</SectionLabel>
@@ -225,7 +224,7 @@ export default function Home() {
       {/* ── Military Service ─────────────────────────────── */}
       {profile.militaryService && (
         <section>
-          <SectionLabel>군복무</SectionLabel>
+          <SectionLabel>military service</SectionLabel>
           <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4">
             <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
               <div>
@@ -233,7 +232,11 @@ export default function Home() {
                   {profile.militaryService.branch}
                 </p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  {profile.militaryService.status === "completed" ? "만기 전역" : profile.militaryService.status === "exempted" ? "병역 면제" : "복무 중"}
+                  {profile.militaryService.status === "completed"
+                    ? "Honorably Discharged"
+                    : profile.militaryService.status === "exempted"
+                    ? "Military Exemption"
+                    : "Currently Serving"}
                 </p>
               </div>
               <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 sm:pt-0.5 shrink-0">
@@ -287,7 +290,7 @@ export default function Home() {
                       <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                         {skill.name}
                       </span>
-                      <span className="font-mono text-xs tracking-tighter" aria-label={`중요도 ${skill.level}단계`}>
+                      <span className="font-mono text-xs tracking-tighter" aria-label={`Proficiency level ${skill.level}`}>
                         {Array.from({ length: 3 }, (_, i) => (
                           <span key={i} className={i < skill.level ? "text-neutral-500 dark:text-neutral-400" : "text-neutral-200 dark:text-neutral-700"}>★</span>
                         ))}
@@ -311,7 +314,7 @@ export default function Home() {
           {projects.map((project) => (
             <Link
               key={project.category}
-              href={`/projects/${project.category}`}
+              href={`/en/projects/${project.category}`}
               className="group rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors bg-neutral-50 dark:bg-neutral-900/50 overflow-hidden block"
             >
               {(project.thumbnail ?? project.architecture.diagram) && (
@@ -319,7 +322,7 @@ export default function Home() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={project.thumbnail ?? project.architecture.diagram}
-                    alt={`${project.title} 썸네일`}
+                    alt={`${project.title} thumbnail`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
@@ -361,7 +364,7 @@ export default function Home() {
               className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors flex flex-col gap-3"
             >
               <div>
-                <span className={`text-xs px-2 py-0.5 rounded ${categoryColor[h.category] ?? categoryColor["기타"]}`}>
+                <span className={`text-xs px-2 py-0.5 rounded ${categoryColor[h.category] ?? categoryColor["Other"]}`}>
                   {h.category}
                 </span>
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm mt-2 leading-snug">
@@ -371,15 +374,15 @@ export default function Home() {
               <hr className="border-neutral-200 dark:border-neutral-700" />
               <dl className="flex-1 flex flex-col justify-between text-xs">
                 <div className="flex gap-2 py-2">
-                  <dt className="shrink-0 w-8 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">문제</dt>
+                  <dt className="shrink-0 w-12 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">Problem</dt>
                   <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed">{h.problem}</dd>
                 </div>
                 <div className="flex gap-2 py-2 border-t border-neutral-200 dark:border-neutral-700">
-                  <dt className="shrink-0 w-8 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">해결</dt>
+                  <dt className="shrink-0 w-12 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">Action</dt>
                   <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed">{h.action}</dd>
                 </div>
                 <div className="flex gap-2 py-2 border-t border-neutral-200 dark:border-neutral-700 min-h-[7rem]">
-                  <dt className="shrink-0 w-8 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">결과</dt>
+                  <dt className="shrink-0 w-12 font-mono text-neutral-800 dark:text-neutral-100 font-semibold">Result</dt>
                   <dd className="text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium">{h.result}</dd>
                 </div>
               </dl>
@@ -387,7 +390,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
 
     </div>
   );
