@@ -26,7 +26,14 @@ export function Header() {
   const homeHref = isEn ? "/en" : "/";
   const projectHref = (slug: string) => isEn ? `/en/projects/${slug}` : `/projects/${slug}`;
   const printHref = (slug: string) => isEn ? `/en/portfolio/print/${slug}` : `/portfolio/print/${slug}`;
-  const langToggleHref = isEn ? "/" : "/en";
+  const langToggleHref = (() => {
+    if (isEn) {
+      const koPath = pathname.replace(/^\/en/, "") || "/";
+      return koPath === "/" || koPath.startsWith("/projects/") ? koPath : "/";
+    } else {
+      return pathname === "/" || pathname.startsWith("/projects/") ? `/en${pathname === "/" ? "" : pathname}` : "/en";
+    }
+  })();
 
   const handleDropdownKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
