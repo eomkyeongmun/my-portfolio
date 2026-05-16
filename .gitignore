@@ -59,3 +59,6 @@ next-env.d.ts
 
 # playwright mcp screenshots
 **/.playwright-mcp/
+
+# tmux IDE session config
+.tmux-ide/
