@@ -62,3 +62,8 @@ next-env.d.ts
 
 # tmux IDE session config
 .tmux-ide/
+
+# PPT generator artifacts (생성된 산출물은 재생성 가능)
+ppt/output/
+ppt/**/__pycache__/
+ppt/.venv/
