@@ -26,10 +26,18 @@ export const profile: Profile = {
       role: "Software Engineer Intern",
       period: "Mar 2026 – Jun 2026",
       description: [
-        "Developed an LLM- and RAG-based automation tool for internal workflow support.",
-        "Participated in applied research and co-authored a paper for the Korean Society of Automotive Engineers (KSAE).",
+        "Developed an LLM- and RAG-based automotive cybersecurity Q&A automation tool.",
+        "Authored a research paper on SDV OTA security for the Korean Society of Automotive Engineers (KSAE).",
         "Gained practical experience in connecting AI-based systems with real engineering workflows.",
       ],
+      paper: {
+        title:
+          "Race Conditions and a Hierarchical Safe-Transition Protocol in SDV OTA Wave Switching",
+        summary:
+          "Quantified the race conditions and security holes that arise during wave switching of a Kubernetes + Istio OTA backend (auth→campaign→package→deploy), and designed and validated a Hierarchical Safe-Transition Protocol (HSTP) to eliminate them. Deactivation order alone shifted the security hole from ~52s to 0s, and HSTP + microsegmentation achieved a 99.1% lateral-movement blocking rate and an 85.6% request success rate.",
+        keywords: ["SDV / OTA", "Kubernetes", "Istio", "Zero Trust", "mTLS"],
+        pdf: "/images/sdv_ota_paper.pdf",
+      },
     },
   ],
   clubs: [

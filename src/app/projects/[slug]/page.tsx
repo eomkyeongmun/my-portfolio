@@ -26,6 +26,7 @@ const categoryColor: Record<string, string> = {
   backend:        "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   infrastructure: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   devops:         "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
+  ai:             "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
 };
 
 const retroConfig: Record<string, { border: string; label: string; icon: string }> = {
@@ -74,6 +75,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         {/* Links */}
         <div className="flex flex-wrap items-center gap-3 mt-6">
           <PdfDownloadButton slug={project.category} projectTitle={project.title} variant="outline" />
+          {project.confidential && (
+            <span className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+              <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              코드 비공개 · 사내 프로젝트
+            </span>
+          )}
           {project.links.github && (
             <a href={project.links.github} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 dark:focus-visible:outline-neutral-100 rounded-sm">

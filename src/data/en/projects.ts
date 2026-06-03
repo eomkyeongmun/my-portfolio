@@ -87,20 +87,103 @@ export const projects: Project[] = [
     },
   },
   {
+    category: "ai",
+    title: "Automotive Cybersecurity RAG System",
+    period: "Mar 2026 – Jun 2026",
+    thumbnail: "/images/rag_arch.svg",
+    confidential: true,
+    overview: {
+      description:
+        "A RAG system that answers automotive cybersecurity questions grounded in ISO/SAE 21434, UN R155, and an internal TARA table. The TARA automation tool (tAIRA) calls it at each analysis step to pull in grounding context.",
+      role:
+        "Solely designed and implemented the entire RAG pipeline — BGE-M3 embeddings, FAISS hybrid retrieval, cross-encoder reranking, and Ollama-based Korean answer generation.",
+    },
+    architecture: {
+      diagram: "/images/rag_arch.svg",
+      description:
+        "A query is embedded as dense+sparse, retrieved via FAISS, combined with sparse scores at 0.7/0.3, reranked by a cross-encoder to the top 5 chunks, and passed as grounding to Ollama (qwen2.5:3b) to produce a Korean answer. Documents are chunked and embedded offline with incremental indexing.",
+      reasoning:
+        "Hybrid retrieval (dense + sparse) was chosen to handle both exact identifier/standard-number matching and semantic search, with the expensive cross-encoder applied only to a small top set. The LLM runs on an in-house Ollama model since sensitive TARA data cannot be sent to external APIs.",
+    },
+    techStack: [
+      {
+        name: "BGE-M3",
+        role: "Dense + sparse embeddings",
+        reason: "A single model handles both semantic search and exact identifier matching.",
+      },
+      {
+        name: "FAISS",
+        role: "Vector index / candidate retrieval",
+        reason: "Lightweight file-based dense search without a separate vector-DB server.",
+      },
+      {
+        name: "Cross-Encoder Reranker",
+        role: "Candidate reranking",
+        reason: "Applied to the top 20 to correct relevance differences the first-stage search misses.",
+      },
+      {
+        name: "Ollama (qwen2.5:3b)",
+        role: "Korean answer generation",
+        reason: "An in-house local LLM, since sensitive documents cannot be sent to external APIs.",
+      },
+      {
+        name: "FastAPI",
+        role: "Query API / tAIRA integration",
+        reason: "Offloads synchronous inference to a thread pool to serve concurrent requests while integrating with tAIRA.",
+      },
+      {
+        name: "Docker Compose",
+        role: "Deployment / data separation",
+        reason: "Bakes public docs into the image while mounting sensitive TARA data and indexes from a host volume.",
+      },
+    ],
+    problemSolving: [
+      {
+        issue:
+          "Queries about standard/threat identifiers (M013-1, ISO 15.4, etc.) sometimes failed to retrieve the exact matching item.",
+        analysis:
+          "Semantic embeddings struggle with near-meaningless tokens like identifiers, and the reranker weakened exact matching by splitting identifiers into subwords.",
+        solution:
+          "Combined sparse scores with dense scores at 0.7/0.3 to reinforce exact-token matching, and branched to bypass the reranker and boost exact sparse matches whenever an ID pattern is detected.",
+        result:
+          "Identifier queries reliably surface the correct item at the top, while general queries keep their relevance through the reranker.",
+      },
+      {
+        issue:
+          "Embedding, FAISS, reranker, and Ollama calls are all synchronous, so the FastAPI async handlers couldn't accept concurrent requests.",
+        analysis:
+          "Calling the no-async inference libraries directly inside async functions stalls the event loop until the work finishes.",
+        solution:
+          "Delegated the blocking calls to a thread pool via asyncio.to_thread, and designed the tAIRA integration to gracefully degrade with an empty context on RAG failure.",
+        result:
+          "Event-loop blocking disappeared under concurrent queries, and tAIRA's TARA analysis continues uninterrupted even if the RAG fails.",
+      },
+    ],
+    retrospective: {
+      improvements:
+        "Designed an end-to-end RAG pipeline — embedding, hybrid retrieval, reranking, local LLM — with exact matching and incremental indexing built for operation.",
+      regrets:
+        "Lacked a quantitative evaluation metric (recall@k, etc.), so tuning relied on qualitative judgment.",
+      futureWork:
+        "Introduce an evaluation harness to quantify tuning and automate index rebuilds and deployment via GitOps.",
+    },
+    links: {},
+  },
+  {
     category: "infrastructure",
     title: "EKS · Central VPC Infrastructure",
     period: "Feb 2026 – Mar 2026",
     overview: {
       description:
         "Design and validate a scalable Kubernetes-based platform architecture with centralized network and observability design.",
-      role: "As team lead, architected an EKS-based platform with multi-layer autoscaling using KEDA and Karpenter. Designed Central VPC and Transit Gateway architecture to centralize shared services. Validated platform stability under 2,000 RPS with zero downtime.",
+      role: "As team lead, coordinated the overall schedule and direction and drove the Kubernetes-centric architecture design and EKS build.",
     },
     architecture: {
       diagram: "/images/aws_cj_infra.png",
       description:
-        "The overall structure is divided into Prod, QA, Dev, DR, and Central VPCs. Prod and QA share an EKS-based architecture with CloudFront → ALB (Ingress) → Kubernetes Service → Pod flow, deployed across multiple AZs for availability. The data layer uses Aurora DB + Reader Endpoint + RDS Proxy for read traffic distribution and connection stability. Prod runs On-Demand + Spot NodePools separately; QA uses Spot-focused nodes for cost savings. Central VPC hosts a GitLab server and monitoring stack for centralized multi-environment management. DR is designed as Pilot Light to minimize standby cost while enabling recovery when needed. DNS query flow is Route 53 Resolver → DNS Firewall (ALERT) → Query Logging → CloudWatch Logs → Metric Filter → Alarm → SNS → Lambda → Slack Alert.",
+        "Environments are split into Prod / QA / Dev / DR / Central VPC, with Prod and QA running CloudFront → ALB (Ingress) → EKS Pod across multiple AZs. The data layer uses Aurora + RDS Proxy for read distribution and connection stability, and Central VPC consolidates GitLab, monitoring, and DNS security observability for centralized operation. DR is designed as Pilot Light to cut standby cost.",
       reasoning:
-        "EKS was chosen for its extensibility and ecosystem integration — not just deployment convenience. Its compatibility with KEDA, Karpenter, and IRSA, and the ability to manage deployments consistently via Helm Charts, were key factors. Central VPC reduces operational complexity by centralizing shared services and consolidating logs, alerts, and status from multiple VPCs into a single point. In short, it's not a design that 'splits the network' — it's a design that reduces operational, security, and observability touchpoints.",
+        "EKS was chosen for its open-source integration (KEDA, Karpenter, IRSA) and consistent Helm-based operation. Central VPC centralizes shared services to reduce operational complexity and view logs/alerts from multiple environments in one place.",
     },
     techStack: [
       {
@@ -111,71 +194,59 @@ export const projects: Project[] = [
       },
       {
         name: "AWS EKS",
-        role: "Application execution and orchestration platform",
-        reason:
-          "Suited for a complex operational environment requiring traffic autoscaling, monitoring, GitOps, and open-source integrations — with strong compatibility with KEDA, Karpenter, and IRSA.",
+        role: "Application execution / orchestration",
+        reason: "Well-suited to a structure with heavy autoscaling, GitOps, and open-source integration needs.",
       },
       {
         name: "KEDA",
         role: "Request-based Pod autoscaling",
-        reason:
-          "Determined that request-volume-based scaling was more appropriate than CPU/memory metrics. Designed to compute average RPS per Pod from Prometheus metrics and scale accordingly — from a minimum of 45 to a maximum of 110 Pods.",
+        reason: "Scales by average RPS per Pod from Prometheus metrics instead of CPU (45 min ~ 110 max).",
       },
       {
         name: "Karpenter",
         role: "Node-level autoscaling",
-        reason:
-          "Increasing Pod count alone was insufficient — schedulable nodes also needed to scale. Designed to automatically provision new nodes upon detecting Pending Pods.",
+        reason: "Auto-provisions nodes on Pending Pods so Pod scaling and node scaling stay matched.",
       },
       {
         name: "ArgoCD / GitOps",
-        role: "Declarative deployment state management",
-        reason:
-          "Adopted to maintain consistent deployment state based on Git and clearly track operational change history.",
-      },
-      {
-        name: "Helm",
-        role: "Standardized deployment for applications and operational stacks",
-        reason:
-          "Used to consistently manage app deployments, monitoring stacks, and autoscaling configurations.",
-      },
-      {
-        name: "Prometheus",
-        role: "Metrics collection and scaling decision input",
-        reason:
-          "Collects /actuator/prometheus metrics to enable KEDA to make request-volume-based scaling decisions.",
+        role: "Declarative deployment state",
+        reason: "Keeps deployment state and operational change history consistent based on Git.",
       },
       {
         name: "IRSA",
         role: "Per-Pod AWS permission isolation",
-        reason:
-          "Applied to avoid concentrating permissions on node-level IAM roles — instead granting only the necessary permissions per ServiceAccount to minimize the security blast radius.",
-      },
-      {
-        name: "Route 53 Resolver / DNS Firewall / CloudWatch / SNS / Lambda",
-        role: "DNS security observability and alert automation",
-        reason:
-          "Configured to track external domain access from Central VPC servers and rapidly deliver threat domain detection events to Slack.",
+        reason: "Grants only the necessary permissions per ServiceAccount to minimize the blast radius.",
       },
     ],
     problemSolving: [
       {
-        issue: "Under heavy load, multiple risks coexisted: traffic hitting unready Pods, slow scaling relative to request volume, and Pending Pods due to insufficient nodes. In practice, node join failures, Pending Pods, MaxPods limits, and ALB health check path mismatches recurred repeatedly.",
+        issue:
+          "Under heavy load, traffic could hit unready Pods, scaling lagged request volume, and Pending Pods occurred when nodes were insufficient.",
         analysis:
-          "Analyzed issues by layer: Spring Boot must not receive requests immediately after startup, making readiness criteria critical. HPA alone couldn't adequately reflect actual request volume. Additionally, Private Subnet routing errors prevented worker nodes from communicating with the EKS API, causing join failures; DNS misconfigurations left nodes NotReady; and MaxPods limits caused Pending Pods.",
+          "Spring Boot must not receive requests right after startup, making readiness critical, and HPA alone couldn't reflect actual request volume.",
         solution:
-          "Designed multiple layers to work in concert rather than relying on a single solution. Separated startup/readiness/liveness probes and aligned ALB health check paths with readiness. Replaced CPU-based scaling with Prometheus-metric-driven KEDA to scale by average RPS per Pod, and pre-scaled a minimum of 45 Pods to ensure initial capacity. Applied Karpenter to automatically provision new nodes when Pending Pods are detected, and used IRSA for per-Pod permission isolation.",
+          "Separated startup/readiness/liveness probes and aligned the ALB health check with readiness. Used Prometheus-driven KEDA to scale by average RPS per Pod with 45 Pods pre-scaled, and Karpenter to auto-add nodes on Pending.",
         result:
-          "Sustained approximately 2,000 RPS for 60 seconds in QA, processing 120,000 total requests. This was the result of 45 pre-scaled Pods, aligned readiness/ALB health check criteria, Prometheus-driven KEDA scaling, Karpenter node scaling, and GitOps-based operational consistency all working together.",
+          "Sustained ~2,000 RPS for 60s in QA, processing 120,000 requests with zero downtime.",
+      },
+      {
+        issue:
+          "Worker nodes failed to join the EKS API or went NotReady, and MaxPods limits caused Pending Pods.",
+        analysis:
+          "Private Subnet routing errors and DNS misconfiguration prevented nodes from reaching the control plane.",
+        solution:
+          "Fixed subnet routing and DNS settings and tuned MaxPods / instance types so nodes joined properly.",
+        result:
+          "Node join failures and Pending issues were resolved, and autoscaling ran stably.",
       },
     ],
     retrospective: {
       improvements:
-        "Validated an EKS-based large-scale traffic handling architecture with real requests. Centralized GitLab, monitoring, and security observability via Central VPC to reduce operational complexity and improve visibility. Built a DNS Firewall + Query Logging + Slack Alert flow to detect and immediately surface network security events.",
+        "Validated an EKS-based large-scale traffic architecture with real requests and centralized GitLab, monitoring, and DNS security observability via Central VPC.",
       regrets:
-        "Resource specs were not refined enough during load testing, resulting in budget overruns. Karpenter was not fully integrated into the GitOps flow, and DNS Firewall was primarily used in ALERT mode without extending to blocking policies.",
+        "Resource specs weren't refined enough during load testing, causing budget overruns, and Karpenter wasn't fully integrated into the GitOps flow.",
       futureWork:
-        "Next steps include full GitOps coverage including Karpenter, enhancing Central VPC security policies with BLOCK/detection rules, and refining cost prediction based on load testing.",
+        "Plan full GitOps coverage including Karpenter and enhanced DNS Firewall blocking policies.",
     },
     links: {
       velog:
@@ -190,131 +261,79 @@ export const projects: Project[] = [
     overview: {
       description:
         "Build and operate a personal portfolio platform using a fully serverless architecture with automated deployment, observability, and security controls.",
-      role: "Solely responsible for the entire lifecycle: Next.js frontend, Puppeteer-based PDF generation, EventBridge + SES feedback pipeline, Terraform IaC, and GitHub Actions CI/CD. Progressively added security (WAF, OAC, HSTS) and observability (X-Ray, CloudWatch, SNS) layers.",
+      role: "Solely responsible for the entire lifecycle: Next.js frontend, Puppeteer-based PDF generation, feedback notification system, Terraform IaC, and GitHub Actions CI/CD.",
     },
     architecture: {
       diagram: "/images/real.png",
       description:
-        "Users receive static pages via external DNS (CNAME) → CloudFront (OAC) → S3. PDF download requests are handled through API Gateway → Lambda (Puppeteer). Feedback submissions flow through API Gateway → Lambda (feedback-handler) → EventBridge (portfolio-events) → Lambda (email-sender) → SES, delivering visitor feedback as real-time email notifications. WAF is placed in front of CloudFront for L7 security, and a Response Headers Policy automatically injects HSTS, X-Frame-Options, and other security headers on all responses. ACM manages HTTPS certificates. The PDF Lambda runs as an ECR container image; the feedback Lambda runs as a zip package. X-Ray provides distributed tracing from API Gateway to Lambda. CloudWatch dashboards and SNS alarms detect Lambda errors, duration, throttling, and API Gateway 5xx in real time. GitHub Actions automates S3 upload → CloudFront cache invalidation for frontend changes, and image build → ECR push → Lambda function update for backend changes.",
+        "Static pages are served via CloudFront (OAC) → S3, while PDF generation and feedback submission go through API Gateway → Lambda. Feedback is loosely coupled to an email-sender Lambda via EventBridge, and WAF, security headers, X-Ray, and CloudWatch alarms cover security and observability. GitHub Actions automates S3 upload, cache invalidation, and Lambda image deployment.",
       reasoning:
-        "Heavy, infrequent workloads like PDF generation are offloaded to Lambda to minimize operational cost without a persistent server. Static content is served globally via CloudFront + S3, with only server-dependent features attached as serverless functions — achieving simplicity and cost efficiency simultaneously. All infrastructure is codified with Terraform for reproducibility and change history management.",
+        "Heavy, infrequent work like PDF generation is offloaded to Lambda to minimize cost without a persistent server, while static content is cached via CloudFront + S3. All infrastructure is codified with Terraform for reproducibility.",
     },
     techStack: [
       {
         name: "Next.js 16 / React / TypeScript",
-        role: "Portfolio web pages and PDF-dedicated rendering pages",
-        reason:
-          "App Router-based static generation (SSG) is optimized for S3 deployment, and TypeScript ensures type-safe data structure management. Compatibility with Tailwind CSS v4 was also a factor.",
-      },
-      {
-        name: "Tailwind CSS v4",
-        role: "Responsive UI styling",
-        reason:
-          "CSS-first configuration allows custom themes to be defined directly in globals.css without a config file. Dark mode support is straightforward with class-based toggling.",
+        role: "Web pages and PDF rendering page",
+        reason: "App Router static generation (SSG) is optimized for S3 deployment with type-safe data structures.",
       },
       {
         name: "AWS S3 + CloudFront + OAC",
-        role: "Static file origin storage and global CDN delivery",
-        reason:
-          "S3 is kept private with OAC (Origin Access Control), allowing access only through CloudFront for enhanced security. External DNS is managed via a third-party provider and connected to CloudFront via CNAME.",
-      },
-      {
-        name: "AWS WAF",
-        role: "L7 security in front of CloudFront",
-        reason:
-          "Applied managed rule sets to block common web attacks such as SQL injection and XSS — ensuring a baseline security layer even for a personal portfolio.",
+        role: "Static file storage / global CDN",
+        reason: "S3 stays private with OAC, accessible only through CloudFront for stronger security.",
       },
       {
         name: "AWS Lambda + Puppeteer (Container)",
         role: "Serverless PDF generation",
-        reason:
-          "Puppeteer requires a Chromium binary that exceeds standard Lambda package size limits. Deploying as a container image Lambda resolves this constraint. Since PDF generation is infrequent, Lambda is more cost-efficient than a persistent server.",
+        reason: "A container image Lambda solves the Chromium package-size limit and is cost-efficient for infrequent requests.",
       },
       {
         name: "AWS API Gateway",
-        role: "HTTP endpoint for Lambda invocation",
-        reason:
-          "Placed API Gateway in front of Lambda (instead of direct CloudFront invocation) to facilitate request routing, auth extension, and X-Ray tracing integration.",
-      },
-      {
-        name: "AWS ECR",
-        role: "Lambda container image registry",
-        reason:
-          "Managing Lambda container images in AWS's internal registry minimizes deployment latency and systematizes image version control.",
-      },
-      {
-        name: "AWS X-Ray",
-        role: "Distributed tracing from API Gateway to Lambda",
-        reason:
-          "Introduced to visualize Lambda cold start latency and Puppeteer rendering bottlenecks that are difficult to identify from simple error logs alone.",
-      },
-      {
-        name: "Terraform",
-        role: "Full infrastructure IaC management",
-        reason:
-          "All resources — CloudFront, S3, WAF, API Gateway, Lambda, ECR, ACM, IAM — are defined as code, maintaining a reproducible infrastructure without manual console operations. Modularized for per-environment extensibility.",
-      },
-      {
-        name: "GitHub Actions",
-        role: "Frontend and Lambda deployment automation",
-        reason:
-          "On code push: Next.js build → S3 upload → CloudFront cache invalidation, and Lambda image build → ECR push → Lambda function update are fully automated, eliminating manual deployments.",
-      },
-      {
-        name: "CloudWatch + SNS",
-        role: "Operational monitoring and alerting",
-        reason:
-          "CloudWatch Alarms detect Lambda errors, duration threshold breaches, throttling, and API Gateway 5xx — with immediate SNS email notifications. Dashboards provide at-a-glance visibility into invocation trends and latency for faster incident response.",
-      },
-      {
-        name: "CloudFront Response Headers Policy",
-        role: "Automatic security header injection",
-        reason:
-          "Applied HSTS (2 years), X-Frame-Options, X-Content-Type-Options, XSS-Protection, Referrer-Policy, and Permissions-Policy to all responses using AWS managed policies — completing the security layer without CloudFront Functions or ongoing maintenance.",
+        role: "HTTP endpoint for Lambda",
+        reason: "Placed in front of Lambda for request routing, auth extension, and X-Ray tracing.",
       },
       {
         name: "Amazon EventBridge + SES",
-        role: "Visitor feedback event processing and email notification",
-        reason:
-          "Instead of directly chaining the feedback-receiver Lambda to the email-sender Lambda, an EventBridge custom bus decouples the two. This enables future additions — Slack notifications, DB storage, etc. — by simply adding new Rules without modifying existing code. Email is sent from the custom domain (eomkyeongmun.me), DKIM-verified via SES for sender credibility.",
+        role: "Feedback event processing / email",
+        reason: "Decouples receiver and sender Lambdas so Slack/DB extensions need only a new Rule.",
+      },
+      {
+        name: "Terraform",
+        role: "Full infrastructure IaC",
+        reason: "Defines CloudFront, S3, WAF, API Gateway, Lambda, and more as code for reproducible infrastructure.",
+      },
+      {
+        name: "GitHub Actions",
+        role: "Frontend / Lambda deployment automation",
+        reason: "On push: build → S3 upload → cache invalidation and Lambda image build/deploy, eliminating manual deployment.",
       },
     ],
     problemSolving: [
       {
         issue: "Korean text rendered as □□□ when generating PDFs with Puppeteer on Lambda.",
         analysis:
-          "Puppeteer's Chromium relies on system fonts. The Lambda runtime environment (Amazon Linux 2) does not include Korean fonts by default, causing Chromium to output □ for Korean characters.",
+          "Chromium relies on system fonts, and the Lambda runtime had no Korean font to render with.",
         solution:
-          "Bundled Noto Sans KR font directly into the Lambda container image Dockerfile. Also loaded the font via Google Fonts on the /portfolio/print page and added waitForFunction in Puppeteer to wait for font loading to complete before capturing the PDF.",
+          "Bundled Noto Sans KR into the container image and added waitForFunction on the print page so the PDF is captured only after fonts finish loading.",
         result:
-          "Korean fonts now render correctly, with all text displaying properly in the generated PDFs. Bundling fonts into the image ensures consistent output without external network dependency.",
+          "Korean renders correctly, and bundling fonts into the image guarantees consistent PDFs with no external network dependency.",
       },
       {
-        issue: "After deployment, clicking the back button or home link on a project detail page redirected back to the project page instead of the home page.",
+        issue: "After deployment, back/home navigation on a project detail page redirected back to the project page instead of home.",
         analysis:
-          "Next.js App Router client navigation fetches RSC (React Server Component) payload files for server component rendering. However, GitHub Actions applied Cache-Control: public, max-age=31536000, immutable to all static files uploaded to S3 — including RSC payload files under _next/static/. Even after CloudFront cache invalidation post-deployment, previously cached RSC payloads in the browser referenced stale routing information, causing incorrect navigation.",
+          "Applying immutable caching to all static files also long-cached the RSC payloads, so the browser referenced stale routing information.",
         solution:
-          "Separated Cache-Control settings in the S3 upload step: applied no-cache to HTML and RSC payload files to always reference the latest version, while keeping immutable for content-hashed JS/CSS files to preserve cache efficiency.",
+          "Split Cache-Control on S3 upload: no-cache for HTML and RSC payloads, immutable only for content-hashed JS/CSS.",
         result:
-          "The post-deployment page navigation issue was resolved. RSC payloads always reference the latest server component output, while static assets retain their long-term cache behavior.",
-      },
-      {
-        issue: "After pushing a Lambda container image to ECR via GitHub Actions, the Lambda function sometimes failed to reflect the new image.",
-        analysis:
-          "Even after pushing a new image with the latest tag to ECR, Lambda continues using its previously cached image unless the function configuration is explicitly updated. An API call to update the function is required for Lambda to recognize the new image.",
-        solution:
-          "Added an aws lambda update-function-code step after the ECR push in the GitHub Actions workflow to force Lambda to reference the latest ECR image on every deployment.",
-        result:
-          "Lambda is now always updated to the latest image on every code push. Changes are reflected immediately with no missed deployments.",
+          "The redirect issue was resolved while static assets keep their long-term cache efficiency.",
       },
     ],
     retrospective: {
       improvements:
-        "Built an entire service end-to-end — from frontend development through serverless backend, IaC, and CI/CD — making all the connections myself. Progressively added production-grade security and observability layers: S3 OAC, WAF, X-Ray, CloudWatch alarms, and security header policies, delivering a structure that goes well beyond simple deployment.",
+        "Built the whole service end-to-end alone and added production-grade security and observability — WAF, X-Ray, CloudWatch alarms.",
       regrets:
-        "Lambda cold start latency on the first PDF generation request can be noticeable, but I didn't thoroughly evaluate applying Provisioned Concurrency. The Terraform module structure also became more complex than initially designed and needs refactoring.",
+        "Didn't fully address Lambda cold start on the first PDF request, and the Terraform module structure grew complex and needs refactoring.",
       futureWork:
-        "Planning to reduce cold start with Lambda Provisioned Concurrency or SnapStart, and add anomalous traffic detection tied to CloudWatch alarms. Will extend the feedback system by adding EventBridge Rules for Slack notifications or DB storage, and refactor Terraform modules into reusable per-environment structures.",
+        "Reduce cold start with Provisioned Concurrency or SnapStart and extend the feedback system to Slack/DB.",
     },
     links: {
       github: "https://github.com/eomkyeongmun/my-portfolio",

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PaperViewer } from "@/components/PaperViewer";
 import { profile } from "@/data/profile";
 import { skills } from "@/data/skills";
 import { projects } from "@/data/projects";
@@ -17,6 +18,7 @@ const categoryColor: Record<string, string> = {
 
 const skillCategoryColor: Record<string, string> = {
   Backend:           "bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+  "AI / LLM":        "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
   "Infra / Platform": "bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
   "CI/CD & GitOps":  "bg-cyan-200 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300",
   Observability:     "bg-violet-200 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300",
@@ -27,6 +29,7 @@ const projectCategoryColor: Record<string, string> = {
   backend: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   infrastructure: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   devops: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
+  ai: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
 };
 
 
@@ -195,6 +198,40 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
+                  {item.paper && (
+                    <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 border-l-2 border-l-emerald-400 dark:border-l-emerald-600 p-3">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="font-mono text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">paper</span>
+                        {item.paper.venue && (
+                          <span className="text-xs text-neutral-400 dark:text-neutral-500">{item.paper.venue}</span>
+                        )}
+                      </div>
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 leading-snug">
+                        {item.paper.title}
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                        {item.paper.summary}
+                      </p>
+                      {item.paper.keywords && item.paper.keywords.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {item.paper.keywords.map((k) => (
+                            <span key={k} className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                              {k}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {item.paper.pdf && (
+                        <PaperViewer
+                          pdf={item.paper.pdf}
+                          title={item.paper.title}
+                          viewLabel="논문 보기"
+                          downloadLabel="다운로드"
+                          closeLabel="닫기"
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
                 <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 shrink-0 sm:pt-0.5">
                   {item.period}
@@ -307,7 +344,7 @@ export default function Home() {
       {/* ── Projects ─────────────────────────────────────── */}
       <section>
         <SectionLabel>projects</SectionLabel>
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           {projects.map((project) => (
             <Link
               key={project.category}

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" font-family="ui-sans-serif, system-ui, 'Segoe UI', 'Noto Sans KR', sans-serif">
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrowd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+    </marker>
+  </defs>
+
+  <!-- title -->
+  <text x="800" y="78" text-anchor="middle" font-size="44" font-weight="700" fill="#4c1d95">자동차 사이버보안 RAG · tAIRA</text>
+  <text x="800" y="128" text-anchor="middle" font-size="26" fill="#7c5fd0">BGE-M3 하이브리드 검색 · Cross-Encoder 재정렬 · 로컬 LLM</text>
+
+  <!-- tAIRA caller -->
+  <rect x="55" y="200" width="250" height="86" rx="16" fill="#faf5ff" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="180" y="238" text-anchor="middle" font-size="26" font-weight="700" fill="#5b21b6">tAIRA</text>
+  <text x="180" y="268" text-anchor="middle" font-size="20" fill="#7c5fd0">TARA 자동화 도구</text>
+  <path d="M180,286 L180,318" stroke="#a78bfa" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#arrowd)"/>
+  <text x="196" y="308" font-size="18" fill="#8b5cf6">POST /ask</text>
+
+  <!-- pipeline boxes y=330 h=130 -->
+  <!-- box helper coords: x = 55,365,675,985,1295 -->
+  <g>
+    <rect x="55" y="330" width="250" height="130" rx="18" fill="#ede9fe" stroke="#a78bfa" stroke-width="2"/>
+    <text x="180" y="402" text-anchor="middle" font-size="28" font-weight="700" fill="#4c1d95">질문</text>
+
+    <rect x="365" y="330" width="250" height="130" rx="18" fill="#7c3aed" stroke="#5b21b6" stroke-width="2"/>
+    <text x="490" y="392" text-anchor="middle" font-size="26" font-weight="700" fill="#ffffff">BGE-M3</text>
+    <text x="490" y="424" text-anchor="middle" font-size="20" fill="#e9d5ff">dense + sparse 임베딩</text>
+
+    <rect x="675" y="330" width="250" height="130" rx="18" fill="#7c3aed" stroke="#5b21b6" stroke-width="2"/>
+    <text x="800" y="392" text-anchor="middle" font-size="26" font-weight="700" fill="#ffffff">FAISS 하이브리드</text>
+    <text x="800" y="424" text-anchor="middle" font-size="20" fill="#e9d5ff">dense 0.7 / sparse 0.3</text>
+
+    <rect x="985" y="330" width="250" height="130" rx="18" fill="#7c3aed" stroke="#5b21b6" stroke-width="2"/>
+    <text x="1110" y="392" text-anchor="middle" font-size="26" font-weight="700" fill="#ffffff">Cross-Encoder</text>
+    <text x="1110" y="424" text-anchor="middle" font-size="20" fill="#e9d5ff">재정렬 → top 5</text>
+
+    <rect x="1295" y="330" width="250" height="130" rx="18" fill="#7c3aed" stroke="#5b21b6" stroke-width="2"/>
+    <text x="1420" y="392" text-anchor="middle" font-size="26" font-weight="700" fill="#ffffff">Ollama LLM</text>
+    <text x="1420" y="424" text-anchor="middle" font-size="20" fill="#e9d5ff">qwen2.5:3b</text>
+  </g>
+
+  <!-- arrows between pipeline boxes (right edge -> next left edge), y=395 -->
+  <path d="M305,395 L365,395" stroke="#7c3aed" stroke-width="3.5" marker-end="url(#arrow)"/>
+  <path d="M615,395 L675,395" stroke="#7c3aed" stroke-width="3.5" marker-end="url(#arrow)"/>
+  <path d="M925,395 L985,395" stroke="#7c3aed" stroke-width="3.5" marker-end="url(#arrow)"/>
+  <path d="M1235,395 L1295,395" stroke="#7c3aed" stroke-width="3.5" marker-end="url(#arrow)"/>
+
+  <!-- answer -->
+  <path d="M1420,460 L1420,540" stroke="#7c3aed" stroke-width="3.5" marker-end="url(#arrow)"/>
+  <rect x="1295" y="548" width="250" height="92" rx="16" fill="#ede9fe" stroke="#a78bfa" stroke-width="2"/>
+  <text x="1420" y="588" text-anchor="middle" font-size="26" font-weight="700" fill="#4c1d95">답변 + 출처</text>
+  <text x="1420" y="618" text-anchor="middle" font-size="19" fill="#7c5fd0">file · page · score</text>
+
+  <!-- documents / ingest -->
+  <rect x="365" y="700" width="560" height="120" rx="18" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="645" y="742" text-anchor="middle" font-size="24" font-weight="700" fill="#5b21b6">근거 문서 · 오프라인 인제스트</text>
+  <text x="645" y="780" text-anchor="middle" font-size="21" fill="#7c5fd0">ISO/SAE 21434 · UN R155 · TARA 표 ~1,277행</text>
+  <text x="645" y="806" text-anchor="middle" font-size="18" fill="#9b7fd4">SHA-256 해시 기반 증분 인덱싱</text>
+  <path d="M800,700 L800,460" stroke="#a78bfa" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#arrowd)"/>
+</svg>

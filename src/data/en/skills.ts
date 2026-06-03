@@ -30,6 +30,28 @@ export const skills: SkillCategory[] = [
     ],
   },
   {
+    category: "AI / LLM",
+    items: [
+      {
+        name: "RAG",
+        description: "Grounded RAG pipeline: hybrid retrieval, reranking, local LLM",
+        level: 2,
+      },
+      {
+        name: "Vector Search (FAISS)",
+        description:
+          "Dense + sparse hybrid retrieval with SHA-256 incremental indexing",
+        level: 2,
+      },
+      {
+        name: "Ollama / LLM",
+        description:
+          "In-house local LLM serving for Korean answers without sending sensitive data externally",
+        level: 2,
+      },
+    ],
+  },
+  {
     category: "Infra / Platform",
     items: [
       {

@@ -13,6 +13,7 @@ export const metadata = {
 // Tech stack tags to show per project (most representative ones)
 const projectTechTags: Record<string, string[]> = {
   backend:        ["Spring Boot", "Spring Security / OAuth2 / JWT", "JPA / MySQL", "Redis", "Docker Compose", "GitHub Actions"],
+  ai:             ["BGE-M3", "FAISS", "Cross-encoder Reranker", "Ollama (qwen2.5)", "FastAPI", "Docker Compose"],
   infrastructure: ["AWS EKS", "Terraform", "KEDA", "Karpenter", "ArgoCD", "Prometheus", "IRSA"],
   devops:         ["Next.js", "AWS Lambda", "CloudFront + S3", "API Gateway", "Terraform", "GitHub Actions", "EventBridge + SES"],
 };
@@ -23,6 +24,11 @@ const projectBullets: Record<string, string[]> = {
     "Designed and implemented REST API for posts, comments (nested), likes, and reports using Spring Boot + JPA",
     "Integrated OAuth2 + JWT + Spring Security authentication and Redis caching layer",
     "Standardized team dev environment via Docker Compose, reducing environment-related errors",
+  ],
+  ai: [
+    "Built an end-to-end automotive-cybersecurity RAG pipeline: BGE-M3 dense+sparse embeddings, FAISS hybrid retrieval, cross-encoder reranking, and a local Ollama LLM",
+    "Boosted exact identifier matching (standards/threat IDs) via 0.7/0.3 dense-sparse fusion and reranker-bypass on ID patterns",
+    "Exposed a FastAPI /ask integration for the tAIRA tool with incremental indexing and sensitive-data-separated Docker deployment",
   ],
   infrastructure: [
     "Architected EKS-based platform with multi-layer autoscaling: KEDA (request-based) + Karpenter (node-level)",
@@ -40,6 +46,7 @@ const projectBullets: Record<string, string[]> = {
 
 const projectTeamRole: Record<string, string> = {
   backend:        "Team Member",
+  ai:             "Solo",
   infrastructure: "Team Lead",
   devops:         "Solo",
 };

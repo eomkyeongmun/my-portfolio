@@ -39,6 +39,28 @@ export const skills: SkillCategory[] = [
     ],
   },
   {
+    category: "AI / LLM",
+    items: [
+      {
+        name: "RAG",
+        description: "하이브리드 검색·재정렬·로컬 LLM 기반 RAG 파이프라인 구축",
+        level: 2,
+      },
+      {
+        name: "Vector Search (FAISS)",
+        description:
+          "dense+sparse 임베딩 기반 하이브리드 검색과 SHA-256 증분 인덱싱 구현",
+        level: 2,
+      },
+      {
+        name: "Ollama / LLM",
+        description:
+          "사내 로컬 LLM 운영으로 민감 데이터 외부 유출 없이 한국어 답변 생성",
+        level: 2,
+      },
+    ],
+  },
+  {
     category: "Infra / Platform",
     items: [
       {
