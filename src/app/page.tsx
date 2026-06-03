@@ -199,9 +199,9 @@ export default function Home() {
                     ))}
                   </ul>
                   {item.paper && (
-                    <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 border-l-2 border-l-emerald-400 dark:border-l-emerald-600 p-3">
+                    <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-3">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="font-mono text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">paper</span>
+                        <span className="font-mono text-[10px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">paper</span>
                         {item.paper.venue && (
                           <span className="text-xs text-neutral-400 dark:text-neutral-500">{item.paper.venue}</span>
                         )}
@@ -227,6 +227,7 @@ export default function Home() {
                           title={item.paper.title}
                           viewLabel="논문 보기"
                           downloadLabel="다운로드"
+                          github={item.paper.github}
                         />
                       )}
                     </div>

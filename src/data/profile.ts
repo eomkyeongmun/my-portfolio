@@ -18,6 +18,7 @@ export interface ExperiencePaper {
   keywords?: string[];  // 핵심 키워드
   venue?: string;       // 학회/게재처
   pdf?: string;         // 논문 PDF 경로 (public/ 기준, 예: "/images/sdv_ota_paper.pdf")
+  github?: string;      // GitHub 저장소 URL
 }
 
 export interface Experience {
@@ -94,6 +95,7 @@ export const profile: Profile = {
           "Kubernetes + Istio 기반 OTA 백엔드(auth→campaign→package→deploy)의 웨이브 전환 구간에서 발생하는 레이스 컨디션과 보안 홀을 정량화하고, 이를 차단하는 계층적 안전 전환 프로토콜(HSTP)을 설계·검증했습니다. 비활성화 순서만으로 보안 홀이 약 52초에서 0초로 갈렸고, HSTP + 마이크로세그멘테이션 적용 시 Lateral Movement 차단율 99.1%, 요청 성공률 85.6%를 달성했습니다.",
         keywords: ["SDV / OTA", "Kubernetes", "Istio", "Zero Trust", "mTLS"],
         pdf: "/images/sdv_ota_paper.pdf",
+        github: "https://github.com/eomkyeongmun/sdv-ota-wave-research",
       },
     },
   ],
