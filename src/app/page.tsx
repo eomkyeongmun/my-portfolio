@@ -227,7 +227,6 @@ export default function Home() {
                           title={item.paper.title}
                           viewLabel="논문 보기"
                           downloadLabel="다운로드"
-                          closeLabel="닫기"
                         />
                       )}
                     </div>

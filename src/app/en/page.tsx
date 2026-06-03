@@ -226,7 +226,6 @@ export default function HomeEn() {
                           title={item.paper.title}
                           viewLabel="View paper"
                           downloadLabel="Download"
-                          closeLabel="Close"
                         />
                       )}
                     </div>
