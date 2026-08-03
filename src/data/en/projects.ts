@@ -8,78 +8,78 @@ export const projects: Project[] = [
     thumbnail: "/images/tave_signal.png",
     overview: {
       description:
-        "Backend development for a community platform supporting user content and interaction features.",
-      role: "Designed and implemented REST APIs for posts, nested comments, likes, and reports. Integrated OAuth2, JWT, and Spring Security for authentication and authorization. Added Redis as a caching layer and standardized the team development environment with Docker Compose.",
+        "A community backend that collects and analyzes news data for a mobile app. The project started from the question 'how do we deliver crawled data to users?' rather than just building another CRUD server.",
+      role: "Designed and implemented the core community APIs (posts, comments, likes, reports) while also driving the standardization of the team's development environment. I spent more time thinking about 'how to ensure everyone develops in the same environment' than on feature code itself.",
     },
     architecture: {
       diagram: "/images/backend_arc.png",
       description:
-        "The Spring Boot backend processes requests from a React Native mobile app. The architecture consists of OAuth2 + JWT + Spring Security-based authentication, Redis/MySQL data handling, a news crawling scheduler, and an analysis service integration layer.",
+        "React Native mobile app → Spring Boot backend → MySQL/Redis data layer. News crawling runs on a separate scheduler so it never affects the user request flow.",
       reasoning:
-        "Consolidated authentication, API, and scheduling into Spring Boot to maximize developer productivity and maintainability. Separated Redis and MySQL to handle fast access and persistent storage independently. Decoupled crawling and analysis functions for extensibility and clear separation of concerns. Used Docker Compose to standardize the runtime environment and ensure deployment reproducibility.",
+        "Initially I tried putting the crawler inside the API server, but realized that slow crawling would drag down API response times, so I separated it into a scheduler. Redis wasn't applied to everything — only to data like like-counts that are read frequently but written rarely. Docker Compose was originally meant for deployment, but after one teammate's Java 17 clashed with another's Java 21 and the same code behaved differently, I decided to use it to define the dev environment itself as code.",
     },
     techStack: [
       {
         name: "Spring Boot",
-        role: "REST API and full backend application implementation",
+        role: "REST API and full backend application",
         reason:
-          "Well-suited for authentication, data access, exception handling, and structured server development — and the entire team was already familiar with the ecosystem.",
+          "I considered Express and FastAPI, but all four team members had Spring experience, so we could skip the learning curve and focus on building features. Framework-level auth, exception handling, and transaction management were also valuable for a team project.",
       },
       {
         name: "Spring Security / OAuth2 / JWT",
         role: "Login and authentication/authorization",
         reason:
-          "Enables stable token-based auth implementation with seamless Spring Boot integration.",
+          "Session-based auth didn't fit a mobile app. JWT gave us stateless auth, and integrating Refresh Token logic into the Spring Security filter chain kept auth logic from scattering across controllers.",
       },
       {
         name: "JPA / MySQL",
-        role: "Core data storage for posts, comments, reports, etc.",
+        role: "Core data storage for posts, comments, reports",
         reason:
-          "Well-suited for relational data modeling and CRUD development, with clear expression of entity relationships.",
+          "The hierarchical post-comment-reply relationships and many-to-many user-like-report relationships mapped naturally to a relational model. I considered NoSQL but the volume of conditional queries (report aggregation, comment sorting) made RDBMS the better fit.",
       },
       {
         name: "Redis",
-        role: "Fast data access layer",
+        role: "Caching frequently read data",
         reason:
-          "Used to reduce DB load and supplement response performance. Its in-memory nature is ideal for caching frequently accessed data.",
+          "Like-counts triggered a COUNT query every time the post list loaded, but writes were infrequent. Caching them in Redis and invalidating only on like changes was a clean tradeoff.",
       },
       {
         name: "Selenium + Scheduler",
         role: "Automated news crawling",
         reason:
-          "Configured as a scheduler to decouple periodic data collection from user requests.",
+          "The target news site was an SPA, so plain HTTP requests couldn't fetch content — Selenium was necessary. I ran it via Spring Scheduler in the background so it wouldn't affect API response times.",
       },
       {
         name: "Docker Compose",
-        role: "Unified dev and deployment runtime environment",
+        role: "Unified dev and deployment runtime",
         reason:
-          "Adopted to reduce environment-specific errors among team members and establish a reproducible runtime baseline.",
+          "One teammate ran Java 17, another Java 21, and the same code produced different results. After that, I concluded that sharing the runtime — not just the code — was essential, and switched to Docker Compose.",
       },
       {
         name: "GitHub Actions",
         role: "Build and deployment automation",
         reason:
-          "Introduced to reduce manual deployments and establish a repeatable deployment flow.",
+          "Manual build-and-deploy made it impossible to track who last deployed what. Switching to auto-deploy on PR merge eliminated deployment mistakes entirely.",
       },
     ],
     problemSolving: [
       {
-        issue: "Same code produced different runtime results across team members' environments.",
+        issue: "Same code produced different runtime results across team members due to Java version and dependency mismatches.",
         analysis:
-          "The root cause was not the feature code itself, but environment mismatches — Java version, dependencies, and execution method differences.",
+          "I initially debugged the code, but the actual cause was Java version differences and local MySQL configuration discrepancies. No amount of code alignment matters if the environments differ.",
         solution:
-          "Reframed Docker as a tool for standardizing the development environment, not just deployment. Used Docker Compose to define the full stack runtime in code, establishing a consistent baseline for the entire team.",
+          "Bundled Java, MySQL, and Redis into a single Docker Compose setup so that 'git pull + docker compose up' guaranteed identical results for everyone.",
         result:
-          "Established a standard that reduced environment-related errors, and gained a first-hand appreciation for the importance of runtime consistency in collaborative development.",
+          "Debugging time from environment mismatches nearly disappeared, and onboarding new team members became much faster.",
       },
     ],
     retrospective: {
       improvements:
-        "Stably implemented core community features — posts, comments, likes, and reports — and gained experience with a backend architecture beyond simple CRUD through news crawling and analysis service integration.",
+        "Went beyond CRUD to experience an architecture combining crawling, caching, and scheduling. The biggest lesson was learning to solve problems outside the code (environment inconsistency) with code.",
       regrets:
-        "Initially thought of Docker only as a deployment tool, which delayed leveraging it for development environment standardization and led to wasted time resolving environment-specific errors.",
+        "If I'd adopted Docker Compose as a dev environment tool from the start, I could have saved the two weeks spent on environment issues. I only moved after experiencing the pain.",
       futureWork:
-        "If the service scales, I plan to further decouple crawling, analysis, and API servers, and enhance async processing, cache strategy, and monitoring.",
+        "I want to more clearly separate crawling and analysis into distinct services, systematize the Redis caching strategy, and add monitoring — which was entirely absent.",
     },
     links: {
       github: "https://github.com/eomkyeongmun/Newgnal-Backend",
@@ -94,78 +94,78 @@ export const projects: Project[] = [
     confidential: true,
     overview: {
       description:
-        "A RAG system that answers automotive cybersecurity questions grounded in ISO/SAE 21434, UN R155, and an internal TARA table. The TARA automation tool (tAIRA) calls it at each analysis step to pull in grounding context.",
+        "Built to eliminate the inefficiency of cybersecurity engineers manually searching through ISO/SAE 21434, UN R155, and internal TARA tables for every query. The TARA automation tool (tAIRA) calls this system at each analysis step to pull in grounding context.",
       role:
-        "Solely designed and implemented the entire RAG pipeline — BGE-M3 embeddings, FAISS hybrid retrieval, cross-encoder reranking, and Ollama-based Korean answer generation.",
+        "Solely designed and implemented the entire RAG pipeline — from embedding model selection to retrieval strategy, LLM answer generation, and API integration. The core challenge was finding the best architecture under two constraints: 'identifiers must be found exactly' and 'sensitive data must never leave the company network.'",
     },
     architecture: {
       diagram: "/images/rag_arch.svg",
       description:
-        "A query is embedded as dense+sparse, retrieved via FAISS, combined with sparse scores at 0.7/0.3, reranked by a cross-encoder to the top 5 chunks, and passed as grounding to Ollama (qwen2.5:3b) to produce a Korean answer. Documents are chunked and embedded offline with incremental indexing.",
+        "A query is embedded as dense+sparse via BGE-M3, retrieved via FAISS, scores combined at 0.7/0.3, reranked by a cross-encoder to the top 5 chunks, and passed as grounding to Ollama (qwen2.5:3b) for Korean answer generation. Documents are chunked and embedded offline with incremental indexing.",
       reasoning:
-        "Hybrid retrieval (dense + sparse) was chosen to handle both exact identifier/standard-number matching and semantic search, with the expensive cross-encoder applied only to a small top set. The LLM runs on an in-house Ollama model since sensitive TARA data cannot be sent to external APIs.",
+        "I initially assumed dense search alone would suffice, but queries like 'What is threat M013-1?' returned irrelevant results — semantic embeddings can't distinguish meaningless identifier codes. So I switched to a hybrid approach, and BGE-M3 conveniently produces both dense and sparse vectors in a single encoding, keeping the pipeline simple. The cross-encoder dramatically improved relevance but was too slow to apply to all results, so I limited it to the top 20 — a tradeoff between accuracy and latency. For the LLM, GPT-4 would have been better, but TARA data is confidential and cannot leave the company network, so I accepted some quality loss and deployed Ollama locally.",
     },
     techStack: [
       {
         name: "BGE-M3",
         role: "Dense + sparse embeddings",
-        reason: "A single model handles both semantic search and exact identifier matching.",
+        reason: "Running separate dense and sparse models would have complicated the pipeline. BGE-M3 produces both vectors in a single pass, keeping the architecture simple.",
       },
       {
         name: "FAISS",
         role: "Vector index / candidate retrieval",
-        reason: "Lightweight file-based dense search without a separate vector-DB server.",
+        reason: "I considered Milvus and Weaviate, but with only a few thousand documents, spinning up a dedicated vector DB server felt excessive. File-based FAISS was sufficient and simpler to deploy.",
       },
       {
         name: "Cross-Encoder Reranker",
         role: "Candidate reranking",
-        reason: "Applied to the top 20 to correct relevance differences the first-stage search misses.",
+        reason: "First-stage retrieval ranking wasn't satisfactory. The cross-encoder evaluates query-chunk pairs together for much more accurate relevance, but it's too slow for all results — so I limited it to the top 20.",
       },
       {
         name: "Ollama (qwen2.5:3b)",
         role: "Korean answer generation",
-        reason: "An in-house local LLM, since sensitive documents cannot be sent to external APIs.",
+        reason: "GPT-4 produced better answers, but TARA data is confidential and can't be sent to external APIs. Among models that could run locally, qwen2.5 had decent Korean performance, and the 3b size balanced response speed with quality.",
       },
       {
         name: "FastAPI",
         role: "Query API / tAIRA integration",
-        reason: "Offloads synchronous inference to a thread pool to serve concurrent requests while integrating with tAIRA.",
+        reason: "tAIRA is Python-based, so using the same language for integration was natural. Since all inference calls are synchronous blocking, I needed an async framework to delegate them to a thread pool via asyncio.to_thread.",
       },
       {
         name: "Docker Compose",
         role: "Deployment / data separation",
-        reason: "Bakes public docs into the image while mounting sensitive TARA data and indexes from a host volume.",
+        reason: "Public standard documents are baked into the image, while sensitive TARA data and indexes are mounted from host volumes. This allows image-only updates for deployment without risking data leakage.",
       },
     ],
     problemSolving: [
       {
         issue:
-          "Queries about standard/threat identifiers (M013-1, ISO 15.4, etc.) sometimes failed to retrieve the exact matching item.",
+          "Queries like 'Explain threat M013-1' returned irrelevant results instead of the exact matching item.",
         analysis:
-          "Semantic embeddings struggle with near-meaningless tokens like identifiers, and the reranker weakened exact matching by splitting identifiers into subwords.",
+          "Dense embeddings can't distinguish meaningless codes like 'M013-1' from general words like 'automotive' or 'security.' The reranker made it worse by splitting identifiers into subwords, actually weakening exact matching.",
         solution:
-          "Combined sparse scores with dense scores at 0.7/0.3 to reinforce exact-token matching, and branched to bypass the reranker and boost exact sparse matches whenever an ID pattern is detected.",
+          "Combined dense (0.7) + sparse (0.3) scores to reinforce exact token matching, and added a branch: when an ID pattern (M013-1, ISO 15.4, etc.) is detected, bypass the reranker and boost sparse exact matches instead. The key insight was abandoning the assumption that all queries should go through the same pipeline.",
         result:
-          "Identifier queries reliably surface the correct item at the top, while general queries keep their relevance through the reranker.",
+          "Identifier queries now reliably surface the correct item at the top, while general queries still benefit from the reranker for relevance.",
       },
       {
         issue:
-          "Embedding, FAISS, reranker, and Ollama calls are all synchronous, so the FastAPI async handlers couldn't accept concurrent requests.",
+          "With 2+ concurrent queries, later requests stalled until the first finished — embedding, FAISS, reranker, and Ollama calls are all synchronous blocking.",
         analysis:
-          "Calling the no-async inference libraries directly inside async functions stalls the event loop until the work finishes.",
+          "FastAPI is async, but inference libraries are synchronous. Calling them directly inside async functions blocks the entire event loop.",
         solution:
-          "Delegated the blocking calls to a thread pool via asyncio.to_thread, and designed the tAIRA integration to gracefully degrade with an empty context on RAG failure.",
+          "Delegated all blocking calls to a thread pool via asyncio.to_thread. Also designed tAIRA integration to gracefully degrade with empty context on RAG failure — RAG is an auxiliary tool and should never block tAIRA's core analysis flow.",
         result:
-          "Event-loop blocking disappeared under concurrent queries, and tAIRA's TARA analysis continues uninterrupted even if the RAG fails.",
+          "Event-loop blocking under concurrent queries disappeared, and tAIRA's TARA analysis continues uninterrupted even when RAG fails.",
       },
     ],
     retrospective: {
       improvements:
-        "Designed an end-to-end RAG pipeline — embedding, hybrid retrieval, reranking, local LLM — with exact matching and incremental indexing built for operation.",
+        "Designed the entire RAG pipeline from scratch and learned that 'per-query-type branching' is more practical than a 'one-size-fits-all pipeline.'",
       regrets:
-        "Lacked a quantitative evaluation metric (recall@k, etc.), so tuning relied on qualitative judgment.",
+        "Without quantitative evaluation (recall@k, etc.), tuning relied on 'does the result look right?' — I could never be sure whether a change was actually an improvement or a regression.",
       futureWork:
-        "Introduce an evaluation harness to quantify tuning and automate index rebuilds and deployment via GitOps.",
+        "Build an evaluation harness to quantify tuning and automate index rebuilds and deployment via GitOps.",
     },
     links: {},
   },
@@ -175,78 +175,78 @@ export const projects: Project[] = [
     period: "Feb 2026 – Mar 2026",
     overview: {
       description:
-        "Design and validate a scalable Kubernetes-based platform architecture with centralized network and observability design.",
-      role: "As team lead, coordinated the overall schedule and direction and drove the Kubernetes-centric architecture design and EKS build.",
+        "Started from the desire to design a Kubernetes platform that could actually handle production-level traffic. Built an EKS-based application platform and Central VPC centralized operations network, then validated the architecture with 2,000 RPS and 120K total requests in QA.",
+      role: "As team lead, coordinated the schedule and direction while driving the EKS-centric architecture design. My focus was on predicting 'where will it break first under load?' and preparing for it proactively.",
     },
     architecture: {
       diagram: "/images/aws_cj_infra.png",
       description:
-        "Environments are split into Prod / QA / Dev / DR / Central VPC, with Prod and QA running CloudFront → ALB (Ingress) → EKS Pod across multiple AZs. The data layer uses Aurora + RDS Proxy for read distribution and connection stability, and Central VPC consolidates GitLab, monitoring, and DNS security observability for centralized operation. DR is designed as Pilot Light to cut standby cost.",
+        "Five environments — Prod / QA / Dev / DR / Central VPC. Prod and QA run CloudFront → ALB (Ingress) → EKS Pod across multiple AZs. Data layer uses Aurora + RDS Proxy. Central VPC consolidates GitLab, monitoring, and DNS security observability.",
       reasoning:
-        "EKS was chosen for its open-source integration (KEDA, Karpenter, IRSA) and consistent Helm-based operation. Central VPC centralizes shared services to reduce operational complexity and view logs/alerts from multiple environments in one place.",
+        "I considered ECS but wanted fine-grained autoscaling control via open-source tools like KEDA and Karpenter, plus consistent Helm-based config management across environments — so EKS was the better fit. Central VPC wasn't in the original design; I added it after realizing that setting up monitoring separately per environment scattered alerts and made it impossible to see the whole picture. DR used Pilot Light because Active-Active was beyond budget — maintaining minimal resources in standby and scaling up on failure was the cost-recovery tradeoff.",
     },
     techStack: [
       {
         name: "Terraform",
         role: "Infrastructure provisioning and DR reproducibility",
         reason:
-          "Chosen to manage infrastructure as code, reduce manual configuration errors, and maintain a reproducible Pilot Light DR structure.",
+          "Managing five environments manually via console would inevitably lead to configuration drift. DR especially needs to be code-defined — if you can't reproduce it reliably, it's useless when you actually need it.",
       },
       {
         name: "AWS EKS",
         role: "Application execution / orchestration",
-        reason: "Well-suited to a structure with heavy autoscaling, GitOps, and open-source integration needs.",
+        reason: "I debated ECS, but KEDA for RPS-based scaling and Karpenter for automatic node provisioning required the Kubernetes ecosystem. I wanted a structure where 'both Pods and nodes scale together when traffic rises.'",
       },
       {
         name: "KEDA",
         role: "Request-based Pod autoscaling",
-        reason: "Scales by average RPS per Pod from Prometheus metrics instead of CPU (45 min ~ 110 max).",
+        reason: "HPA's CPU-based scaling had poor correlation with actual user traffic. Scaling by average RPS per Pod from Prometheus metrics responds to real load, and pre-scaling 45 Pods absorbed cold start issues.",
       },
       {
         name: "Karpenter",
         role: "Node-level autoscaling",
-        reason: "Auto-provisions nodes on Pending Pods so Pod scaling and node scaling stay matched.",
+        reason: "Even if KEDA scales Pods, they go Pending without enough nodes. Cluster Autoscaler was too slow; Karpenter detects Pending Pods and provisions right-sized nodes quickly, keeping Pod and node scaling in sync.",
       },
       {
         name: "ArgoCD / GitOps",
         role: "Declarative deployment state",
-        reason: "Keeps deployment state and operational change history consistent based on Git.",
+        reason: "Running kubectl apply manually makes it impossible to be sure the live environment matches Git. With five environments, Git as the single source of truth for deployment state and history was essential.",
       },
       {
         name: "IRSA",
         role: "Per-Pod AWS permission isolation",
-        reason: "Grants only the necessary permissions per ServiceAccount to minimize the blast radius.",
+        reason: "Attaching an IAM Role to a node gives every Pod on that node the same permissions. Mapping only needed permissions per ServiceAccount to each Pod minimizes the blast radius.",
       },
     ],
     problemSolving: [
       {
         issue:
-          "Under heavy load, traffic could hit unready Pods, scaling lagged request volume, and Pending Pods occurred when nodes were insufficient.",
+          "During load testing, Spring Boot Pods received traffic before boot completed, HPA scaling lagged behind traffic increases, and Pods went Pending when nodes were insufficient.",
         analysis:
-          "Spring Boot must not receive requests right after startup, making readiness critical, and HPA alone couldn't reflect actual request volume.",
+          "Spring Boot takes 10–15 seconds to boot, but Pods were registered to the service immediately without a readiness probe. HPA used CPU metrics, so its reaction timing diverged from actual request volume. Pod scaling without node scaling created a compounding problem.",
         solution:
-          "Separated startup/readiness/liveness probes and aligned the ALB health check with readiness. Used Prometheus-driven KEDA to scale by average RPS per Pod with 45 Pods pre-scaled, and Karpenter to auto-add nodes on Pending.",
+          "Separated startup/readiness/liveness probes to block traffic before boot completes. Switched to KEDA with average RPS per Pod scaling, pre-scaled 45 Pods for initial load absorption, and added Karpenter for automatic node provisioning on Pending — aligning Pod and node scaling timing.",
         result:
-          "Sustained ~2,000 RPS for 60s in QA, processing 120,000 requests with zero downtime.",
+          "Sustained ~2,000 RPS for 60 seconds in QA, processing 120,000 requests with zero downtime.",
       },
       {
         issue:
-          "Worker nodes failed to join the EKS API or went NotReady, and MaxPods limits caused Pending Pods.",
+          "Worker nodes failed to join the EKS API or fell into NotReady state.",
         analysis:
-          "Private Subnet routing errors and DNS misconfiguration prevented nodes from reaching the control plane.",
+          "I initially assumed it was a node-level issue, but the actual cause was that Private Subnet routing tables weren't going through the NAT Gateway, so nodes couldn't reach the control plane. A network configuration error, not a compute one.",
         solution:
-          "Fixed subnet routing and DNS settings and tuned MaxPods / instance types so nodes joined properly.",
+          "Fixed subnet routing and DNS settings, and also adjusted MaxPods limits per instance type. After this experience, I created an EKS network checklist to prevent the same mistake when adding new environments.",
         result:
-          "Node join failures and Pending issues were resolved, and autoscaling ran stably.",
+          "Node join issues were resolved and Karpenter-based autoscaling operated stably.",
       },
     ],
     retrospective: {
       improvements:
-        "Validated an EKS-based large-scale traffic architecture with real requests and centralized GitLab, monitoring, and DNS security observability via Central VPC.",
+        "The biggest takeaway was validating a designed architecture against real load. Architecture on paper and architecture under traffic are different things — I experienced that firsthand.",
       regrets:
-        "Resource specs weren't refined enough during load testing, causing budget overruns, and Karpenter wasn't fully integrated into the GitOps flow.",
+        "Didn't simulate resource specs thoroughly before load testing, which caused AWS cost overruns. Karpenter configuration wasn't fully integrated into the GitOps flow before the project ended.",
       futureWork:
-        "Plan full GitOps coverage including Karpenter and enhanced DNS Firewall blocking policies.",
+        "Full GitOps automation including Karpenter, and a cost simulation process before load testing.",
     },
     links: {
       velog:
@@ -260,80 +260,80 @@ export const projects: Project[] = [
     thumbnail: "/images/real.png",
     overview: {
       description:
-        "Build and operate a personal portfolio platform using a fully serverless architecture with automated deployment, observability, and security controls.",
-      role: "Solely responsible for the entire lifecycle: Next.js frontend, Puppeteer-based PDF generation, feedback notification system, Terraform IaC, and GitHub Actions CI/CD.",
+        "Tired of manually creating portfolio PDFs every time someone asked, I decided to build a site that serves the portfolio on the web and auto-generates PDFs. Since I was building it anyway, I set a goal of handling everything solo — frontend to infrastructure to CI/CD.",
+      role: "Solely responsible for the full stack: Next.js frontend, Puppeteer PDF generation, feedback notification system, Terraform IaC, and GitHub Actions CI/CD. My personal bar was 'one push deploys everything.'",
     },
     architecture: {
       diagram: "/images/real.png",
       description:
-        "Static pages are served via CloudFront (OAC) → S3, while PDF generation and feedback submission go through API Gateway → Lambda. Feedback is loosely coupled to an email-sender Lambda via EventBridge, and WAF, security headers, X-Ray, and CloudWatch alarms cover security and observability. GitHub Actions automates S3 upload, cache invalidation, and Lambda image deployment.",
+        "Static pages served via CloudFront (OAC) → S3. PDF generation and feedback submission go through API Gateway → Lambda. Feedback is loosely coupled to an email-sender Lambda via EventBridge. WAF, security headers, X-Ray, and CloudWatch alarms provide security and observability.",
       reasoning:
-        "Heavy, infrequent work like PDF generation is offloaded to Lambda to minimize cost without a persistent server, while static content is cached via CloudFront + S3. All infrastructure is codified with Terraform for reproducibility.",
+        "Running a Next.js server on EC2 would have been simplest, but a portfolio site has almost no traffic — paying for an always-on server felt wasteful. I made static pages nearly free with S3+CloudFront and isolated only heavy, infrequent work (PDF generation) into Lambda. For the feedback system, I initially had the receiver Lambda send emails directly, but realized that adding Slack or DB storage later would mean modifying the Lambda every time. Decoupling via EventBridge means I can add new consumers just by adding Rules.",
     },
     techStack: [
       {
         name: "Next.js 16 / React / TypeScript",
         role: "Web pages and PDF rendering page",
-        reason: "App Router static generation (SSG) is optimized for S3 deployment with type-safe data structures.",
+        reason: "I considered Gatsby, but App Router's SSG was a perfect fit for S3 deployment. TypeScript catches data structure changes at compile time, which matters when portfolio data evolves frequently.",
       },
       {
         name: "AWS S3 + CloudFront + OAC",
         role: "Static file storage / global CDN",
-        reason: "S3 stays private with OAC, accessible only through CloudFront for stronger security.",
+        reason: "I was uncomfortable making S3 public, so I restricted access via OAC to CloudFront only. A global CDN might be overkill for a portfolio, but CloudFront's caching and HTTPS handling were convenient enough to include.",
       },
       {
         name: "AWS Lambda + Puppeteer (Container)",
         role: "Serverless PDF generation",
-        reason: "A container image Lambda solves the Chromium package-size limit and is cost-efficient for infrequent requests.",
+        reason: "Puppeteer's Chromium binary exceeds 250MB, breaking the ZIP Lambda size limit (50MB). Switching to a container image Lambda removed the size constraint, and with only a few PDF requests per day, it's far cheaper than running a server.",
       },
       {
         name: "AWS API Gateway",
         role: "HTTP endpoint for Lambda",
-        reason: "Placed in front of Lambda for request routing, auth extension, and X-Ray tracing.",
+        reason: "I could expose Lambda URLs directly, but adding auth or rate limiting later requires API Gateway. X-Ray tracing integrates here with a single toggle.",
       },
       {
         name: "Amazon EventBridge + SES",
         role: "Feedback event processing / email",
-        reason: "Decouples receiver and sender Lambdas so Slack/DB extensions need only a new Rule.",
+        reason: "If the receiver Lambda sends emails directly, adding Slack or DB storage means modifying Lambda code each time. EventBridge lets me add new consumers with just a Rule — no code changes needed.",
       },
       {
         name: "Terraform",
         role: "Full infrastructure IaC",
-        reason: "Defines CloudFront, S3, WAF, API Gateway, Lambda, and more as code for reproducible infrastructure.",
+        reason: "With 10+ resources (CloudFront, S3, WAF, Lambda...), manual console management would inevitably lead to 'why is this configured this way?' Defining everything as code preserves intent in version history and makes the entire environment reproducible.",
       },
       {
         name: "GitHub Actions",
         role: "Frontend / Lambda deployment automation",
-        reason: "On push: build → S3 upload → cache invalidation and Lambda image build/deploy, eliminating manual deployment.",
+        reason: "Manually running build → S3 upload → cache invalidation kept leading to missed steps. Automating the full flow on push eliminated deployment mistakes entirely.",
       },
     ],
     problemSolving: [
       {
         issue: "Korean text rendered as □□□ when generating PDFs with Puppeteer on Lambda.",
         analysis:
-          "Chromium relies on system fonts, and the Lambda runtime had no Korean font to render with.",
+          "Chromium uses system fonts, and the Lambda container had no Korean fonts at all. It worked locally but broke on Lambda — I initially suspected an encoding issue, but the root cause was missing fonts.",
         solution:
-          "Bundled Noto Sans KR into the container image and added waitForFunction on the print page so the PDF is captured only after fonts finish loading.",
+          "Bundled Noto Sans KR into the container image and added waitForFunction on document.fonts.ready before PDF capture. Relying on an external CDN could break again depending on network conditions, so bundling was the safer choice.",
         result:
-          "Korean renders correctly, and bundling fonts into the image guarantees consistent PDFs with no external network dependency.",
+          "Korean renders consistently, and bundling fonts guarantees identical results regardless of the runtime environment.",
       },
       {
-        issue: "After deployment, back/home navigation on a project detail page redirected back to the project page instead of home.",
+        issue: "After deployment, clicking back/home from a project detail page redirected back to the project page instead of home.",
         analysis:
-          "Applying immutable caching to all static files also long-cached the RSC payloads, so the browser referenced stale routing information.",
+          "The problem was applying immutable caching to all static files — including Next.js RSC payloads (.rsc), which also got long-cached. The browser kept referencing stale routing data. My naive assumption that 'all static files can be cached forever' was the root cause.",
         solution:
-          "Split Cache-Control on S3 upload: no-cache for HTML and RSC payloads, immutable only for content-hashed JS/CSS.",
+          "Split Cache-Control by file type during S3 upload: no-cache for HTML and RSC payloads, immutable only for content-hashed JS/CSS.",
         result:
-          "The redirect issue was resolved while static assets keep their long-term cache efficiency.",
+          "Routing issue resolved. Hashed assets still benefit from long-term caching.",
       },
     ],
     retrospective: {
       improvements:
-        "Built the whole service end-to-end alone and added production-grade security and observability — WAF, X-Ray, CloudWatch alarms.",
+        "Building everything from frontend to serverless backend, IaC, and CI/CD solo was the biggest learning experience. Adding WAF, X-Ray, and CloudWatch alarms taught me the real difference between 'working' and 'operable.'",
       regrets:
-        "Didn't fully address Lambda cold start on the first PDF request, and the Terraform module structure grew complex and needs refactoring.",
+        "Lambda cold start on the first PDF request still takes ~10 seconds and remains unresolved. Terraform modules grew complex and need refactoring.",
       futureWork:
-        "Reduce cold start with Provisioned Concurrency or SnapStart and extend the feedback system to Slack/DB.",
+        "Reduce cold start with Provisioned Concurrency and extend the feedback system to Slack and DB via EventBridge Rules.",
     },
     links: {
       github: "https://github.com/eomkyeongmun/my-portfolio",
