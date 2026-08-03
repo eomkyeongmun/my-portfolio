@@ -12,10 +12,6 @@ interface Props {
   lang: Lang;
 }
 
-/**
- * 이력서 = 요약 1~2장. 정량 성과 + 기술 스택 중심.
- * 프로젝트는 한 줄 요약 + 핵심 기술 태그만 (심층 내용은 포폴로).
- */
 export function ResumeDoc({ data, company, lang }: Props) {
   const theme = buildTheme(company.accent);
   const s = buildStyles(theme);
@@ -30,157 +26,195 @@ export function ResumeDoc({ data, company, lang }: Props) {
         : company.displayName
       : null;
 
-  const contact = [p.links.email, p.links.phone, p.links.github, p.links.blog]
-    .filter(Boolean)
-    .join("   ·   ");
-
   return (
     <Document author={p.name} title={`${p.name} ${L.resumeTitle}`}>
       <Page size="A4" style={s.page}>
-        {/* Header */}
-        <View style={s.rowBetween}>
-          <View>
+
+        {/* ── Hero ─────────────────────────────────────── */}
+        <View>
+          <View style={s.rowBetween}>
             <Text style={s.name}>{p.name}</Text>
-            <Text style={s.role}>{role}</Text>
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={s.docKind}>{L.resumeTitle}</Text>
+              {target && (
+                <Text style={s.target}>{lang === "en" ? `for ${target}` : `${target} 지원`}</Text>
+              )}
+            </View>
           </View>
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={s.docKind}>{L.resumeTitle}</Text>
-            {target && (
-              <Text style={s.target}>{lang === "en" ? `for ${target}` : `${target} 지원`}</Text>
-            )}
+          <Text style={s.role}>{role}</Text>
+          {p.birthdate && <Text style={s.birthdate}>{p.birthdate}</Text>}
+          <View style={s.keywordRow}>
+            {p.keywords.map((kw, i) => (
+              <Text key={i} style={s.keyword}>{kw}</Text>
+            ))}
+          </View>
+          <View style={s.contactRow}>
+            {p.links.email && <Text style={s.contactItem}>{p.links.email}</Text>}
+            {p.links.phone && <Text style={s.contactItem}>{p.links.phone}</Text>}
+            {p.links.github && <Text style={s.contactItem}>{p.links.github}</Text>}
+            {p.links.blog && <Text style={s.contactItem}>{p.links.blog}</Text>}
           </View>
         </View>
-        <Text style={s.contact}>{contact}</Text>
+
         <View style={s.headerRule} />
 
-        {/* Summary */}
-        <View style={s.section}>
-          <SectionTitle s={s}>{L.summary}</SectionTitle>
+        {/* ── About ────────────────────────────────────── */}
+        <SectionTitle s={s}>about</SectionTitle>
+        <View style={s.borderedBlock}>
           <Text>{p.summary}</Text>
         </View>
 
-        {/* Education */}
-        <View style={s.section}>
-          <SectionTitle s={s}>{L.education}</SectionTitle>
-          <View style={s.rowBaseline}>
-            <Text>
-              <Text style={s.bold}>{p.education.school}</Text>  ·  {p.education.major}
-            </Text>
-            {p.education.period && <Text style={s.period}>{p.education.period}</Text>}
+        {/* ── Education ────────────────────────────────── */}
+        <SectionTitle s={s}>education</SectionTitle>
+        <View style={s.borderedBlock}>
+          <View style={s.rowBetween}>
+            <View>
+              <Text style={s.bold}>{p.education.school}</Text>
+              <Text style={[s.muted, { fontSize: 8.5, marginTop: 1 }]}>{p.education.major}</Text>
+            </View>
+            <View style={{ alignItems: "flex-end" }}>
+              {p.education.period && <Text style={s.period}>{p.education.period}</Text>}
+              <Text style={[s.faint, { marginTop: 2 }]}>
+                GPA {p.education.gpa}  ·  Major {p.education.majorGpa}
+              </Text>
+            </View>
           </View>
-          <Text style={s.muted}>
-            {L.gpa} {p.education.gpa}   ·   {L.majorGpa} {p.education.majorGpa}
-          </Text>
         </View>
 
-        {/* Experience */}
+        {/* ── Experience ───────────────────────────────── */}
         {p.experience && p.experience.length > 0 && (
-          <View style={s.section}>
-            <SectionTitle s={s}>{L.experience}</SectionTitle>
-            {p.experience.map((exp, i) => (
-              <View key={i} style={s.block}>
-                <View style={s.rowBaseline}>
-                  <Text>
-                    <Text style={s.bold}>{exp.company}</Text>
-                    {exp.role ? `  ·  ${exp.role}` : ""}
-                  </Text>
-                  <Text style={s.period}>{exp.period}</Text>
+          <>
+            <SectionTitle s={s}>experience</SectionTitle>
+            <View style={s.borderedBlock}>
+              {p.experience.map((exp, i) => (
+                <View key={i} style={{ marginBottom: 4 }}>
+                  <View style={s.rowBetween}>
+                    <View>
+                      <Text style={s.bold}>{exp.company}</Text>
+                      {exp.role ? <Text style={[s.muted, { fontSize: 8.5 }]}>{exp.role}</Text> : null}
+                    </View>
+                    <Text style={s.period}>{exp.period}</Text>
+                  </View>
+                  {exp.description.map((d, j) => (
+                    <Bullet key={j} s={s}>{d}</Bullet>
+                  ))}
+                  {exp.paper && (
+                    <View style={[s.card, { marginTop: 3 }]}>
+                      <Text style={s.cardLabel}>paper</Text>
+                      <Text style={[s.bold, { fontSize: 8.5 }]}>{exp.paper.title}</Text>
+                      {exp.paper.keywords && exp.paper.keywords.length > 0 && (
+                        <TagRow s={s} items={exp.paper.keywords} />
+                      )}
+                    </View>
+                  )}
                 </View>
-                {exp.description.map((d, j) => (
-                  <Bullet key={j} s={s}>{d}</Bullet>
-                ))}
-                {exp.paper && (
-                  <Text style={[s.muted, { marginTop: 2 }]}>
-                    <Text style={s.bold}>{lang === "en" ? "Paper" : "논문"}</Text>
-                    {`  ${exp.paper.title}`}
-                  </Text>
-                )}
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </>
         )}
 
-        {/* Skills (tech stack emphasis) */}
-        <View style={s.section}>
-          <SectionTitle s={s}>{L.skills}</SectionTitle>
+        {/* ── Bootcamp ─────────────────────────────────── */}
+        {p.bootcamp && p.bootcamp.length > 0 && (
+          <>
+            <SectionTitle s={s}>bootcamp</SectionTitle>
+            <View style={s.borderedBlock}>
+              {p.bootcamp.map((b, i) => (
+                <View key={i} style={[s.rowBetween, { marginBottom: 2 }]}>
+                  <View>
+                    <Text style={s.bold}>{b.name}</Text>
+                    <Text style={[s.muted, { fontSize: 8 }]}>{b.organizer}</Text>
+                  </View>
+                  <Text style={s.period}>{b.period}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
+
+        {/* ── Skills (compact: category + names only) ─── */}
+        <SectionTitle s={s}>skills</SectionTitle>
+        <View style={s.borderedBlock}>
           {data.skills.map((cat, i) => (
-            <View key={i} style={{ flexDirection: "row", marginBottom: 2 }}>
-              <Text style={[s.bold, { width: 110 }]}>{cat.category}</Text>
-              <Text style={{ flex: 1 }}>{cat.items.map((it) => it.name).join("  ·  ")}</Text>
+            <View key={i} style={{ flexDirection: "row", marginBottom: 3, alignItems: "baseline" }}>
+              <Text style={[s.bold, { width: 95, fontSize: 8.5 }]}>{cat.category}</Text>
+              <Text style={[s.muted, { flex: 1, fontSize: 8.5 }]}>
+                {cat.items.map((it) => it.name).join("  ·  ")}
+              </Text>
             </View>
           ))}
         </View>
 
-        {/* Key Highlights (quantitative) */}
-        {data.highlights.length > 0 && (
-          <View style={s.section}>
-            <SectionTitle s={s}>{L.highlights}</SectionTitle>
-            {data.highlights.map((h, i) => (
-              <View key={i} style={{ marginBottom: 4 }}>
-                <Text style={s.bold}>{h.title}</Text>
-                <Text style={s.muted}>{h.result}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Projects (brief) */}
-        <View style={s.section}>
-          <SectionTitle s={s}>{L.projects}</SectionTitle>
+        {/* ── Projects (brief) ─────────────────────────── */}
+        <SectionTitle s={s}>projects</SectionTitle>
+        <View style={s.borderedBlock}>
           {data.projects.map((proj, i) => (
-            <View key={i} style={s.block}>
+            <View key={i} style={{ marginBottom: 5 }}>
               <View style={s.rowBaseline}>
-                <Text style={s.bold}>{proj.title}</Text>
+                <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                  <Text style={s.bold}>{proj.title}</Text>
+                  <Text style={[s.tag, { fontSize: 6.5 }]}>{proj.category}</Text>
+                </View>
                 <Text style={s.period}>{proj.period}</Text>
               </View>
-              <Text style={s.muted}>{proj.overview.description}</Text>
+              <Text style={[s.muted, { marginTop: 1, fontSize: 8.5 }]}>{proj.overview.description}</Text>
               <TagRow s={s} items={proj.techStack.slice(0, 6).map((t) => t.name)} />
             </View>
           ))}
         </View>
 
-        {/* Certifications */}
-        {data.certifications.length > 0 && (
-          <View style={s.section}>
-            <SectionTitle s={s}>{L.certifications}</SectionTitle>
-            {data.certifications.map((c, i) => (
-              <View key={i} style={s.rowBaseline}>
-                <Text>
-                  <Text style={s.bold}>{c.name}</Text>  ·  {c.issuer}
-                </Text>
-                <Text style={s.period}>{c.date}</Text>
-              </View>
-            ))}
-          </View>
+        {/* ── Highlights (compact) ─────────────────────── */}
+        {data.highlights.length > 0 && (
+          <>
+            <SectionTitle s={s}>highlights</SectionTitle>
+            <View style={s.borderedBlock}>
+              {data.highlights.map((h, i) => (
+                <View key={i} style={{ marginBottom: 4 }}>
+                  <Text style={[s.bold, { fontSize: 8.5 }]}>{h.title}</Text>
+                  <Text style={[s.muted, { fontSize: 8 }]}>{h.result}</Text>
+                </View>
+              ))}
+            </View>
+          </>
         )}
 
-        {/* Military + Activities */}
-        <View style={s.section}>
-          <SectionTitle s={s}>{L.activities}</SectionTitle>
+        {/* ── Certifications ──────────────────────────── */}
+        {data.certifications.length > 0 && (
+          <>
+            <SectionTitle s={s}>certifications</SectionTitle>
+            <View style={s.borderedBlock}>
+              {data.certifications.map((c, i) => (
+                <View key={i} style={[s.rowBetween, { marginBottom: 2 }]}>
+                  <View>
+                    <Text style={s.bold}>{c.name}</Text>
+                    <Text style={[s.muted, { fontSize: 7.5 }]}>{c.issuer}</Text>
+                  </View>
+                  <Text style={s.period}>{c.date}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
+
+        {/* ── Activities ──────────────────────────────── */}
+        <SectionTitle s={s}>activities</SectionTitle>
+        <View style={s.borderedBlock}>
           {p.militaryService && (
-            <View style={s.rowBaseline}>
-              <Text>
-                <Text style={s.bold}>{L.military}</Text>  ·  {p.militaryService.branch}  ·{" "}
-                {militaryStatus(p.militaryService.status, lang)}
-              </Text>
+            <View style={[s.rowBetween, { marginBottom: 2 }]}>
+              <View>
+                <Text style={s.bold}>{p.militaryService.branch}</Text>
+                <Text style={[s.muted, { fontSize: 7.5 }]}>{militaryStatus(p.militaryService.status, lang)}</Text>
+              </View>
               <Text style={s.period}>{p.militaryService.period}</Text>
             </View>
           )}
-          {p.bootcamp?.map((b, i) => (
-            <View key={`b${i}`} style={s.rowBaseline}>
-              <Text>
-                <Text style={s.bold}>{b.name}</Text>  ·  {b.organizer}
-              </Text>
-              <Text style={s.period}>{b.period}</Text>
-            </View>
-          ))}
           {p.clubs?.map((c, i) => (
-            <View key={`c${i}`} style={s.rowBaseline}>
+            <View key={`c${i}`} style={[s.rowBetween, { marginBottom: 1 }]}>
               <Text>{c.name}</Text>
               <Text style={s.period}>{c.period}</Text>
             </View>
           ))}
         </View>
+
       </Page>
     </Document>
   );

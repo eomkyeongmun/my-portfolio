@@ -1,5 +1,6 @@
 import type { CompanyConfig } from "../lib/types";
 import { defaultCompany } from "./default";
+import { daangn } from "./daangn";
 
 /**
  * 기업 레지스트리.
@@ -11,6 +12,7 @@ import { defaultCompany } from "./default";
  */
 export const companies: Record<string, CompanyConfig> = {
   default: defaultCompany,
+  daangn,
 };
 
 export function getCompany(id: string): CompanyConfig {
