@@ -71,7 +71,7 @@ export const profile: Profile = {
   },
   title: "사용자의 다음 행동을 설계하는 백엔드 엔지니어가 되겠습니다",
   summary:
-    "Spring Boot 기반 백엔드 시스템을 설계·구현하며, 사용자 행동 데이터를 바탕으로 서비스를 개선하는 엔지니어를 목표로 하고 있습니다. REST API 설계, RDBMS·Redis 활용, AI/LLM 기반 생산성 향상에 관심이 많으며, 확장 가능한 아키텍처와 데이터 기반 의사결정으로 프로덕트 가치를 높이고 싶습니다.",
+    "Spring Boot 기반 백엔드 시스템을 설계·구현하며, 사용자 행동 데이터를 바탕으로 서비스를 개선하는 엔지니어를 목표로 하고 있습니다. AI/LLM 기반 생산성 향상에 관심이 많으며, 확장 가능한 아키텍처와 데이터 기반 의사결정으로 프로덕트 가치를 높이고 싶습니다.",
   bootcamp: [
     {
       name: "Cloud Wave 7기",
@@ -111,7 +111,7 @@ export const profile: Profile = {
     period: "2022.05.30 - 2023.11.29",
     status: "completed",
   },
-  keywords: ["Spring Boot / Backend", "RDBMS / Redis", "AI · LLM"],
+  keywords: ["Spring Boot / Backend", "AI · LLM"],
   links: {
     email: "eomkyeongmun@naver.com",
     phone: "010-4716-6629",
