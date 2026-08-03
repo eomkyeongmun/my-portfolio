@@ -7,8 +7,8 @@ export const profile: Profile = {
     school: "Dongguk University",
     major: "Department of Information and Communication Engineering",
     period: "Mar 2021 – Feb 2027 (Expected)",
-    gpa: "4.08 / 4.5",
-    majorGpa: "4.25 / 4.50",
+    gpa: "4.06 / 4.5",
+    majorGpa: "4.20 / 4.50",
   },
   title: "Bridging AI Technology with Real-World Infrastructure and Services",
   summary:
@@ -24,9 +24,10 @@ export const profile: Profile = {
     {
       company: "Rock Korea (Intern)",
       role: "Software Engineer Intern",
-      period: "Mar 2026 – Jun 2026",
+      period: "Mar 2026 – Aug 2026",
       description: [
         "Developed an LLM- and RAG-based automotive cybersecurity Q&A automation tool.",
+        "Built AI-native CI/CD error handling — GitHub Actions captures build/test failure logs, summarizes root cause via LLM, and sends actionable fix guidance to Slack in real time.",
         "Authored a research paper on SDV OTA security for the Korean Society of Automotive Engineers (KSAE).",
         "Gained practical experience in connecting AI-based systems with real engineering workflows.",
       ],

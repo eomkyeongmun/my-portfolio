@@ -66,12 +66,12 @@ export const profile: Profile = {
     school: "동국대학교",
     major: "정보통신공학과",
     period: "2021.03 - 2027.02",
-    gpa: "4.08 / 4.5",
-    majorGpa: "4.25",
+    gpa: "4.06 / 4.5",
+    majorGpa: "4.20",
   },
-  title: "AI 기술을 실제 인프라와 서비스로 연결하는 사람이 되겠습니다",
+  title: "사용자의 다음 행동을 설계하는 백엔드 엔지니어가 되겠습니다",
   summary:
-    "서비스가 안정적으로 운영될 수 있도록 인프라를 설계하고 자동화하는 엔지니어를 목표로 하고 있습니다. 클라우드, 컨테이너, 배포 자동화, 시스템 구조 설계에 관심이 많으며 단순 개발을 넘어 확장성과 운영 효율까지 고려하는 아키텍처를 만들고 싶습니다.",
+    "Spring Boot 기반 백엔드 시스템을 설계·구현하며, 사용자 행동 데이터를 바탕으로 서비스를 개선하는 엔지니어를 목표로 하고 있습니다. REST API 설계, RDBMS·Redis 활용, AI/LLM 기반 생산성 향상에 관심이 많으며, 확장 가능한 아키텍처와 데이터 기반 의사결정으로 프로덕트 가치를 높이고 싶습니다.",
   bootcamp: [
     {
       name: "Cloud Wave 7기",
@@ -83,9 +83,10 @@ export const profile: Profile = {
     {
       company: "Rock Korea (Intern)",
       role: "",
-      period: "2026.03 - 2026.06",
+      period: "2026.03 - 2026.08",
       description: [
         "LLM·RAG 기반 자동차 사이버보안 Q&A 자동화 툴 개발",
+        "GitHub Actions CI/CD 파이프라인에 AI 에러 분석 연동 — 빌드·테스트 실패 시 로그를 LLM으로 요약·원인 분석해 Slack으로 즉시 알림 및 해결 가이드 제공",
         "SDV OTA 보안 관련 자동차공학회 논문 작성",
       ],
       paper: {
@@ -110,7 +111,7 @@ export const profile: Profile = {
     period: "2022.05.30 - 2023.11.29",
     status: "completed",
   },
-  keywords: ["AWS / Cloud", "Docker / DevOps", "Infra Architecture"],
+  keywords: ["Spring Boot / Backend", "RDBMS / Redis", "AI · LLM"],
   links: {
     email: "eomkyeongmun@naver.com",
     phone: "010-4716-6629",
