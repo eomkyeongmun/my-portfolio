@@ -3,87 +3,101 @@ import type { Project } from "@/data/projects";
 export const projects: Project[] = [
   {
     category: "backend",
-    title: "Newgnal Backend",
-    period: "May 2025 – Jul 2025",
-    thumbnail: "/images/tave_signal.png",
+    title: "CrossView",
+    period: "Jun 2026 –",
     overview: {
       description:
-        "A community backend that collects and analyzes news data for a mobile app. The project started from the question 'how do we deliver crawled data to users?' rather than just building another CRUD server.",
-      role: "Designed and implemented the core community APIs (posts, comments, likes, reports) while also driving the standardization of the team's development environment. I spent more time thinking about 'how to ensure everyone develops in the same environment' than on feature code itself.",
+        "A study platform where people preparing for career transitions share resumes and practice mock interviews together. It started as a simple idea — 'online interview study groups would be convenient' — but once I actually deployed and started running it, I found myself facing a completely different kind of problem: 'how do I keep the costs under control to sustain a personal project long-term?'",
+      role: "Solely designed, implemented, and operating the entire stack: frontend (Next.js), backend (Spring Boot), infrastructure (Terraform), and CI/CD (GitHub Actions). I spent more time building 'a structure I can operate alone and reliably' than on feature development.",
     },
     architecture: {
-      diagram: "/images/backend_arc.png",
+      diagram: "/images/crossview_arch.svg",
       description:
-        "React Native mobile app → Spring Boot backend → MySQL/Redis data layer. News crawling runs on a separate scheduler so it never affects the user request flow.",
+        "Spring Boot, PostgreSQL, Redis, and Next.js run together via Docker Compose on a single EC2 instance. DB backups are automated with Spring Batch: pg_dump → S3 upload → local cleanup, running daily at 3 AM. When an error occurs, a custom Logback Appender catches it, sends it to Bedrock Claude Haiku for root-cause analysis, and delivers the result via email and Slack.",
       reasoning:
-        "Initially I tried putting the crawler inside the API server, but realized that slow crawling would drag down API response times, so I separated it into a scheduler. Redis wasn't applied to everything — only to data like like-counts that are read frequently but written rarely. Docker Compose was originally meant for deployment, but after one teammate's Java 17 clashed with another's Java 21 and the same code behaved differently, I decided to use it to define the dev environment itself as code.",
+        "My first instinct was to use RDS — it's the obvious choice. But when I priced it out, even a db.t3.micro came to ~$15/month, and with storage and backup costs on top, it rivaled the EC2 bill itself. I asked myself: 'Does this service actually need RDS-level availability?' Honestly, for a study platform with a few dozen users, Multi-AZ failover was overkill. So I put PostgreSQL in Docker on EC2 and covered the data loss risk with daily S3 backups. An RPO of 24 hours means 'worst case, I lose one day of data' — and for this service, that's an acceptable tradeoff. For error alerting, I originally planned to just collect logs and email them. But after waking up to error emails at 3 AM and having to judge 'is this urgent or not?' every single time, it got exhausting. So I plugged in Bedrock Claude — but to keep costs predictable, I chose the cheapest Haiku model, capped context at 50 recent log lines, and added a 10-minute dedup cooldown for identical errors. The principle was: 'use AI, but never let the cost become unpredictable.'",
     },
     techStack: [
       {
-        name: "Spring Boot",
-        role: "REST API and full backend application",
+        name: "Spring Boot / JPA / QueryDSL",
+        role: "REST API, domain logic, dynamic queries",
         reason:
-          "I considered Express and FastAPI, but all four team members had Spring experience, so we could skip the learning curve and focus on building features. Framework-level auth, exception handling, and transaction management were also valuable for a team project.",
+          "With 15 entities and complex relationships (groups, memberships, resumes, evaluations — lots of many-to-many), and dynamic filtering on the recruitment board, QueryDSL's type-safe query building made long-term maintenance far easier than string-based JPQL.",
       },
       {
-        name: "Spring Security / OAuth2 / JWT",
-        role: "Login and authentication/authorization",
+        name: "Docker Compose + PostgreSQL",
+        role: "Application runtime + data storage",
         reason:
-          "Session-based auth didn't fit a mobile app. JWT gave us stateless auth, and integrating Refresh Token logic into the Spring Security filter chain kept auth logic from scattering across controllers.",
+          "RDS would have been convenient, but its monthly cost nearly matched the EC2 bill. When I honestly evaluated whether a personal project needs managed DB features like automatic backups and failover, the answer was no — Docker PostgreSQL plus S3 backups was sufficient. More operational overhead, but less than half the cost.",
       },
       {
-        name: "JPA / MySQL",
-        role: "Core data storage for posts, comments, reports",
+        name: "Spring Batch + S3",
+        role: "Daily DB backup automation",
         reason:
-          "The hierarchical post-comment-reply relationships and many-to-many user-like-report relationships mapped naturally to a relational model. I considered NoSQL but the volume of conditional queries (report aggregation, comment sorting) made RDBMS the better fit.",
+          "A cron job with a shell script could have done it, but I needed retry on failure, alerting, and execution history tracking. Spring Batch's Job/Step structure cleanly separated the three stages — pg_dump, S3 upload, local cleanup — and JobParameters prevented duplicate runs for free.",
       },
       {
-        name: "Redis",
-        role: "Caching frequently read data",
+        name: "Bedrock Claude Haiku + Logback",
+        role: "Automated error analysis and alerting",
         reason:
-          "Like-counts triggered a COUNT query every time the post list loaded, but writes were infrequent. Caching them in Redis and invalidating only on like changes was a clean tradeoff.",
+          "Receiving raw error logs by email meant I had to judge 'is this urgent or ignorable?' every time. Automating root-cause analysis and severity assessment with Haiku cut that cognitive load. To control costs: 50-line context cap, 10-minute dedup cooldown, async thread pool capped at 3. The design uses AI while keeping costs predictable.",
       },
       {
-        name: "Selenium + Scheduler",
-        role: "Automated news crawling",
+        name: "Terraform",
+        role: "Full AWS infrastructure as code",
         reason:
-          "The target news site was an SPA, so plain HTTP requests couldn't fetch content — Selenium was necessary. I ran it via Spring Scheduler in the background so it wouldn't affect API response times.",
+          "With 10+ resources (EC2, S3, Security Groups, CloudWatch alarms...), managing them through the console would inevitably lead to 'why is this security group rule open?' Code preserves intent in version history and makes the entire environment reproducible.",
       },
       {
-        name: "Docker Compose",
-        role: "Unified dev and deployment runtime",
+        name: "GitHub Actions CI/CD",
+        role: "Build, test, and deployment automation",
         reason:
-          "One teammate ran Java 17, another Java 21, and the same code produced different results. After that, I concluded that sharing the runtime — not just the code — was essential, and switched to Docker Compose.",
-      },
-      {
-        name: "GitHub Actions",
-        role: "Build and deployment automation",
-        reason:
-          "Manual build-and-deploy made it impossible to track who last deployed what. Switching to auto-deploy on PR merge eliminated deployment mistakes entirely.",
+          "CI spins up PostgreSQL and Redis service containers to test against real databases. CD temporarily opens the SSH port only to the GitHub Actions runner's IP during deployment, then closes it when done — whether the deploy succeeds or fails. I built this because leaving SSH open 24/7 made me uneasy.",
       },
     ],
     problemSolving: [
       {
-        issue: "Same code produced different runtime results across team members due to Java version and dependency mismatches.",
+        issue:
+          "Running the DB on RDS for a personal project meant monthly costs rivaled the EC2 bill, making long-term operation unsustainable.",
         analysis:
-          "I initially debugged the code, but the actual cause was Java version differences and local MySQL configuration discrepancies. No amount of code alignment matters if the environments differ.",
+          "RDS db.t3.micro alone was ~$15/month; add storage and backup costs and it approached the EC2 t3.medium cost (~$30). For a study platform with dozens of users, Multi-AZ failover and automatic backups felt like paying for insurance I'd never claim. I realized I could 'build just the level of reliability I actually need' and cut costs in half.",
         solution:
-          "Bundled Java, MySQL, and Redis into a single Docker Compose setup so that 'git pull + docker compose up' guaranteed identical results for everyone.",
+          "Removed RDS and switched to Docker PostgreSQL on EC2. Automated daily backups at 3 AM via Spring Batch: pg_dump → S3 upload → local cleanup (files older than 7 days). The S3 bucket has a 30-day lifecycle policy, so backup storage costs are also automatically controlled.",
         result:
-          "Debugging time from environment mismatches nearly disappeared, and onboarding new team members became much faster.",
+          "DB-related monthly costs dropped from ~$15 to ~$0.1 (S3 storage). Accepting an RPO of 24 hours was a deliberate tradeoff matched to the service's actual requirements.",
+      },
+      {
+        issue:
+          "When error alert emails arrived at odd hours, manually reading stack traces and judging severity every time was draining.",
+        analysis:
+          "Forwarding raw logs was 'notification,' not 'analysis.' In a solo-operated project, manually triaging every error isn't sustainable. I needed AI to handle first-pass analysis, but the cost had to stay controllable.",
+        solution:
+          "A custom Logback Appender catches ERROR-level logs from the com.crossview package, excluding the alert service's own logs to prevent infinite loops. Caught errors are processed asynchronously with hash-based 10-minute dedup cooldown, then sent to Bedrock Haiku with the last 50 log lines for root-cause analysis, severity assessment, and remediation suggestions — delivered via email and Slack. Thread pool capped at 3, context limited to 50 lines — keeping AI call costs within a predictable range.",
+        result:
+          "Error alerts now arrive with AI analysis, so I can judge 'do I need to look at this now?' from the subject line alone. Haiku costs stay under $1/month.",
+      },
+      {
+        issue:
+          "Keeping EC2's SSH port (22) open 24/7 for deployment automation was a security concern.",
+        analysis:
+          "The CD pipeline SSHes into EC2 to deploy, but opening port 22 to 0.0.0.0/0 exposes it to brute-force attempts. Deployments happen a few times a day at most — leaving the port open around the clock was both wasteful and risky.",
+        solution:
+          "The GitHub Actions CD workflow queries the runner's public IP, opens SSH only for that IP in the Security Group, deploys, then removes the rule on completion — on both success and failure. The port is open only during deployment, only to the specific IP that needs it.",
+        result:
+          "SSH port exposure dropped from 24 hours to a few minutes per deployment, maintaining automation without sacrificing security.",
       },
     ],
     retrospective: {
       improvements:
-        "Went beyond CRUD to experience an architecture combining crawling, caching, and scheduling. The biggest lesson was learning to solve problems outside the code (environment inconsistency) with code.",
+        "What I learned most from this project wasn't 'how to build features' — it was 'how to balance operational cost against reliability.' Dropping RDS, designing AI cost controls, automating deployment security — all of these came from asking 'what's the right level for this service's scale?'",
       regrets:
-        "If I'd adopted Docker Compose as a dev environment tool from the start, I could have saved the two weeks spent on environment issues. I only moved after experiencing the pain.",
+        "Monitoring is heavily skewed toward error alerting; performance metrics (response times, DB query latency) are still lacking. CloudWatch alarms focus on CPU, and application-level observability needs strengthening.",
       futureWork:
-        "I want to more clearly separate crawling and analysis into distinct services, systematize the Redis caching strategy, and add monitoring — which was entirely absent.",
+        "Add Prometheus + Grafana for application metrics collection, and automate backup recovery testing to regularly verify that the 24-hour RPO actually holds.",
     },
     links: {
-      github: "https://github.com/eomkyeongmun/Newgnal-Backend",
-      demo: "/images/tave_pdf.pdf",
+      github: "https://github.com/eomkyeongmun/my_own",
+      demo: "https://crossview.duckdns.org",
     },
   },
   {

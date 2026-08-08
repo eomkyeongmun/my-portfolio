@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 960" font-family="ui-sans-serif, system-ui, 'Segoe UI', 'Noto Sans KR', sans-serif">
+  <rect width="1600" height="960" fill="#ffffff"/>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0d9488"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5eead4"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="800" y="52" text-anchor="middle" font-size="40" font-weight="700" fill="#134e4a">CrossView Architecture</text>
+  <text x="800" y="88" text-anchor="middle" font-size="22" fill="#5eead4">FinOps 기반 개인 프로젝트 운영 · 자동화된 백업 · AI 에러 분석</text>
+
+  <!-- ===== EC2 Instance (big container) ===== -->
+  <rect x="340" y="120" width="680" height="400" rx="20" fill="#f0fdfa" stroke="#99f6e4" stroke-width="2.5" stroke-dasharray="12 6"/>
+  <text x="360" y="152" font-size="18" font-weight="700" fill="#0f766e">EC2  t3.medium  (Docker Compose)</text>
+
+  <!-- Nginx -->
+  <rect x="380" y="170" width="600" height="60" rx="12" fill="#0d9488" stroke="#0f766e" stroke-width="2"/>
+  <text x="680" y="207" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">Nginx (Reverse Proxy · HTTPS)</text>
+
+  <!-- Next.js -->
+  <rect x="380" y="260" width="280" height="80" rx="14" fill="#115e59" stroke="#0f766e" stroke-width="2"/>
+  <text x="520" y="296" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">Next.js 16</text>
+  <text x="520" y="322" text-anchor="middle" font-size="16" fill="#99f6e4">Frontend · :3000</text>
+
+  <!-- Spring Boot -->
+  <rect x="700" y="260" width="280" height="80" rx="14" fill="#115e59" stroke="#0f766e" stroke-width="2"/>
+  <text x="840" y="296" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">Spring Boot</text>
+  <text x="840" y="322" text-anchor="middle" font-size="16" fill="#99f6e4">Backend API · :8080</text>
+
+  <!-- PostgreSQL -->
+  <rect x="380" y="370" width="280" height="80" rx="14" fill="#0d9488" stroke="#0f766e" stroke-width="2"/>
+  <text x="520" y="406" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">PostgreSQL 16</text>
+  <text x="520" y="432" text-anchor="middle" font-size="16" fill="#ccfbf1">Docker · :5432</text>
+
+  <!-- Redis -->
+  <rect x="700" y="370" width="280" height="80" rx="14" fill="#0d9488" stroke="#0f766e" stroke-width="2"/>
+  <text x="840" y="406" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">Redis 7</text>
+  <text x="840" y="432" text-anchor="middle" font-size="16" fill="#ccfbf1">캐시 · 세션 · :6379</text>
+
+  <!-- Arrows: Nginx → Next.js / Spring Boot -->
+  <path d="M520,230 L520,260" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M840,230 L840,260" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Arrows: Spring Boot → PostgreSQL / Redis -->
+  <path d="M770,340 L600,370" stroke="#5eead4" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowSoft)"/>
+  <path d="M840,340 L840,370" stroke="#5eead4" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowSoft)"/>
+
+  <!-- ===== User ===== -->
+  <rect x="580" y="16" width="80" height="30" rx="6" fill="none"/>
+  <!-- User icon above Nginx pointing down -->
+  <circle cx="200" cy="260" r="22" fill="#f0fdfa" stroke="#0d9488" stroke-width="2.5"/>
+  <text x="200" y="267" text-anchor="middle" font-size="18" font-weight="700" fill="#0d9488">User</text>
+  <path d="M222,260 L340,260" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M200,282 L200,310" stroke="none"/>
+
+  <!-- ===== S3 Backup Flow (right side) ===== -->
+  <rect x="1120" y="150" width="420" height="320" rx="18" fill="#fff7ed" stroke="#fed7aa" stroke-width="2"/>
+  <text x="1330" y="182" text-anchor="middle" font-size="18" font-weight="700" fill="#9a3412">DB 백업 파이프라인 (매일 03:00)</text>
+
+  <!-- Step 1 -->
+  <rect x="1150" y="200" width="360" height="60" rx="12" fill="#ea580c" stroke="#c2410c" stroke-width="2"/>
+  <text x="1330" y="228" text-anchor="middle" font-size="19" font-weight="700" fill="#ffffff">Step 1: pg_dump</text>
+  <text x="1330" y="250" text-anchor="middle" font-size="15" fill="#fed7aa">PostgreSQL → .sql 덤프 파일</text>
+
+  <!-- Step 2 -->
+  <rect x="1150" y="280" width="360" height="60" rx="12" fill="#ea580c" stroke="#c2410c" stroke-width="2"/>
+  <text x="1330" y="308" text-anchor="middle" font-size="19" font-weight="700" fill="#ffffff">Step 2: S3 Upload</text>
+  <text x="1330" y="330" text-anchor="middle" font-size="15" fill="#fed7aa">S3 버킷 · 30일 수명주기</text>
+
+  <!-- Step 3 -->
+  <rect x="1150" y="360" width="360" height="60" rx="12" fill="#ea580c" stroke="#c2410c" stroke-width="2"/>
+  <text x="1330" y="388" text-anchor="middle" font-size="19" font-weight="700" fill="#ffffff">Step 3: Local Cleanup</text>
+  <text x="1330" y="410" text-anchor="middle" font-size="15" fill="#fed7aa">7일 초과 로컬 파일 삭제</text>
+
+  <!-- Spring Batch label -->
+  <rect x="1180" y="435" width="300" height="28" rx="8" fill="#fff7ed" stroke="none"/>
+  <text x="1330" y="456" text-anchor="middle" font-size="16" font-weight="600" fill="#c2410c">Spring Batch · JobParameters 중복방지</text>
+
+  <!-- Arrow from PostgreSQL to backup -->
+  <path d="M660,410 L680,480 L1100,480 L1100,230 L1150,230" stroke="#ea580c" stroke-width="2.5" fill="none" marker-end="url(#arrowOrange)"/>
+  <text x="900" y="474" text-anchor="middle" font-size="15" font-weight="600" fill="#ea580c">매일 03:00 cron</text>
+
+  <!-- ===== FinOps Callout ===== -->
+  <rect x="1120" y="490" width="420" height="70" rx="14" fill="#fef3c7" stroke="#fbbf24" stroke-width="2"/>
+  <text x="1330" y="518" text-anchor="middle" font-size="17" font-weight="700" fill="#92400e">FinOps: RDS $15/월 → S3 백업 $0.1/월</text>
+  <text x="1330" y="542" text-anchor="middle" font-size="15" fill="#a16207">RPO 24h 허용 · 서비스 규모에 맞는 적정 안정성</text>
+
+  <!-- ===== Error Alert Pipeline (bottom) ===== -->
+  <rect x="60" y="590" width="1480" height="170" rx="18" fill="#fdf2f8" stroke="#f9a8d4" stroke-width="2"/>
+  <text x="100" y="622" font-size="18" font-weight="700" fill="#9d174d">에러 자동 분석 파이프라인</text>
+
+  <!-- Logback Appender -->
+  <rect x="90" y="640" width="240" height="90" rx="12" fill="#be185d" stroke="#9d174d" stroke-width="2"/>
+  <text x="210" y="672" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">Logback Appender</text>
+  <text x="210" y="696" text-anchor="middle" font-size="14" fill="#fce7f3">com.crossview ERROR</text>
+  <text x="210" y="716" text-anchor="middle" font-size="14" fill="#fce7f3">무한루프 방지 필터</text>
+
+  <!-- Dedup -->
+  <rect x="380" y="640" width="220" height="90" rx="12" fill="#be185d" stroke="#9d174d" stroke-width="2"/>
+  <text x="490" y="672" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">중복 제거</text>
+  <text x="490" y="696" text-anchor="middle" font-size="14" fill="#fce7f3">해시 기반 10분 쿨다운</text>
+  <text x="490" y="716" text-anchor="middle" font-size="14" fill="#fce7f3">@Async 비동기 처리</text>
+
+  <!-- Bedrock Haiku -->
+  <rect x="650" y="640" width="280" height="90" rx="12" fill="#be185d" stroke="#9d174d" stroke-width="2"/>
+  <text x="790" y="672" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">Bedrock Claude Haiku</text>
+  <text x="790" y="696" text-anchor="middle" font-size="14" fill="#fce7f3">원인 분석 · 심각도 판단</text>
+  <text x="790" y="716" text-anchor="middle" font-size="14" fill="#fce7f3">컨텍스트 50줄 · 스레드풀 3개</text>
+
+  <!-- Email -->
+  <rect x="980" y="640" width="170" height="90" rx="12" fill="#be185d" stroke="#9d174d" stroke-width="2"/>
+  <text x="1065" y="678" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">Email</text>
+  <text x="1065" y="704" text-anchor="middle" font-size="14" fill="#fce7f3">Gmail SMTP</text>
+
+  <!-- Slack -->
+  <rect x="1190" y="640" width="170" height="90" rx="12" fill="#be185d" stroke="#9d174d" stroke-width="2"/>
+  <text x="1275" y="678" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">Slack</text>
+  <text x="1275" y="704" text-anchor="middle" font-size="14" fill="#fce7f3">Webhook</text>
+
+  <!-- Cost label -->
+  <rect x="1390" y="655" width="130" height="42" rx="10" fill="#fef3c7" stroke="#fbbf24" stroke-width="2"/>
+  <text x="1455" y="682" text-anchor="middle" font-size="15" font-weight="700" fill="#92400e">&lt; $1/월</text>
+
+  <!-- Error pipeline arrows -->
+  <path d="M330,685 L380,685" stroke="#be185d" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M600,685 L650,685" stroke="#be185d" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M930,670 L980,670" stroke="#be185d" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M930,700 L980,700" stroke="none"/>
+  <path d="M1150,685 L1190,685" stroke="#be185d" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Fork arrow to Email and Slack -->
+  <path d="M930,685 L960,685 L960,670 L980,670" stroke="#be185d" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M960,685 L960,700 L1190,700 L1190,685" stroke="#be185d" stroke-width="2" fill="none"/>
+
+  <!-- Arrow from Spring Boot down to error pipeline -->
+  <path d="M840,340 L840,348 L60,348 L60,685 L90,685" stroke="#f9a8d4" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#arrow)"/>
+  <text x="66" y="520" font-size="14" fill="#be185d" transform="rotate(90,66,520)">ERROR 로그</text>
+
+  <!-- ===== CI/CD (left side) ===== -->
+  <rect x="60" y="120" width="240" height="400" rx="18" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+  <text x="180" y="152" text-anchor="middle" font-size="18" font-weight="700" fill="#1e40af">GitHub Actions CI/CD</text>
+
+  <!-- CI -->
+  <rect x="80" y="170" width="200" height="70" rx="12" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="180" y="200" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">CI Pipeline</text>
+  <text x="180" y="222" text-anchor="middle" font-size="13" fill="#bfdbfe">빌드 · 실DB 테스트</text>
+
+  <!-- CD -->
+  <rect x="80" y="260" width="200" height="70" rx="12" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="180" y="290" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">CD Pipeline</text>
+  <text x="180" y="312" text-anchor="middle" font-size="13" fill="#bfdbfe">master push 자동배포</text>
+
+  <!-- Ephemeral SSH -->
+  <rect x="80" y="350" width="200" height="90" rx="12" fill="#dbeafe" stroke="#93c5fd" stroke-width="2"/>
+  <text x="180" y="378" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af">임시 SSH 보안</text>
+  <text x="180" y="400" text-anchor="middle" font-size="13" fill="#3b82f6">러너 IP → SG 오픈</text>
+  <text x="180" y="418" text-anchor="middle" font-size="13" fill="#3b82f6">배포 후 SG 복원</text>
+  <text x="180" y="436" text-anchor="middle" font-size="13" fill="#3b82f6">노출: 24h → 수 분</text>
+
+  <!-- CD arrow to EC2 -->
+  <path d="M280,295 L340,295" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+  <text x="310" y="288" text-anchor="middle" font-size="13" fill="#2563eb">SSH</text>
+
+  <!-- ===== Terraform (bottom-left) ===== -->
+  <rect x="60" y="810" width="300" height="80" rx="14" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+  <text x="210" y="845" text-anchor="middle" font-size="20" font-weight="700" fill="#166534">Terraform IaC</text>
+  <text x="210" y="870" text-anchor="middle" font-size="15" fill="#16a34a">EC2 · S3 · SG · CloudWatch · IAM</text>
+
+  <!-- ===== CloudWatch (bottom-right) ===== -->
+  <rect x="1120" y="810" width="420" height="80" rx="14" fill="#faf5ff" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="1330" y="845" text-anchor="middle" font-size="20" font-weight="700" fill="#6b21a8">CloudWatch Alarms</text>
+  <text x="1330" y="870" text-anchor="middle" font-size="15" fill="#7c3aed">CPU &gt;80% · 인스턴스 상태 · 자동 복구 → SNS Email</text>
+
+  <!-- ===== Legend ===== -->
+  <rect x="420" y="820" width="620" height="60" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="440" y="842" width="16" height="16" rx="3" fill="#0d9488"/>
+  <text x="462" y="855" font-size="14" fill="#334155">서비스 흐름</text>
+  <rect x="560" y="842" width="16" height="16" rx="3" fill="#ea580c"/>
+  <text x="582" y="855" font-size="14" fill="#334155">백업 (FinOps)</text>
+  <rect x="680" y="842" width="16" height="16" rx="3" fill="#be185d"/>
+  <text x="702" y="855" font-size="14" fill="#334155">에러 자동화</text>
+  <rect x="800" y="842" width="16" height="16" rx="3" fill="#2563eb"/>
+  <text x="822" y="855" font-size="14" fill="#334155">CI/CD</text>
+  <rect x="900" y="842" width="16" height="16" rx="3" fill="#fbbf24"/>
+  <text x="922" y="855" font-size="14" fill="#334155">비용 절감 포인트</text>
+</svg>
