@@ -106,6 +106,51 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx" {
   }
 }
 
+# ─── CloudFront Alarms ────────────────────────────────────────────────────────
+
+# CloudFront: 5xx 오류율 1% 초과 시 알람
+resource "aws_cloudwatch_metric_alarm" "cloudfront_5xx" {
+  alarm_name          = "${var.project_name}-cloudfront-5xx-${var.environment}"
+  alarm_description   = "CloudFront 5xx 오류율 1% 초과"
+  namespace           = "AWS/CloudFront"
+  metric_name         = "5xxErrorRate"
+  dimensions          = { DistributionId = var.cloudfront_distribution_id, Region = "Global" }
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  threshold           = 1
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
+  ok_actions    = [aws_sns_topic.alerts.arn]
+
+  tags = {
+    Name = "${var.project_name}-cloudfront-5xx-${var.environment}"
+  }
+}
+
+# CloudFront: 4xx 오류율 5% 초과 시 알람 (잘못된 경로 접근 급증 감지)
+resource "aws_cloudwatch_metric_alarm" "cloudfront_4xx" {
+  alarm_name          = "${var.project_name}-cloudfront-4xx-${var.environment}"
+  alarm_description   = "CloudFront 4xx 오류율 5% 초과 — 잘못된 경로 접근 급증"
+  namespace           = "AWS/CloudFront"
+  metric_name         = "4xxErrorRate"
+  dimensions          = { DistributionId = var.cloudfront_distribution_id, Region = "Global" }
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  threshold           = 5
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
+
+  tags = {
+    Name = "${var.project_name}-cloudfront-4xx-${var.environment}"
+  }
+}
+
 # ─── CloudWatch Dashboard ─────────────────────────────────────────────────────
 
 resource "aws_cloudwatch_dashboard" "main" {
@@ -127,6 +172,8 @@ resource "aws_cloudwatch_dashboard" "main" {
             aws_cloudwatch_metric_alarm.lambda_duration.arn,
             aws_cloudwatch_metric_alarm.lambda_throttles.arn,
             aws_cloudwatch_metric_alarm.api_5xx.arn,
+            aws_cloudwatch_metric_alarm.cloudfront_5xx.arn,
+            aws_cloudwatch_metric_alarm.cloudfront_4xx.arn,
           ]
         }
       },
@@ -218,6 +265,98 @@ resource "aws_cloudwatch_dashboard" "main" {
               { stat = "Average", label = "전체 지연" }],
             ["AWS/ApiGateway", "IntegrationLatency", "ApiId", var.api_id,
               { stat = "Average", label = "Lambda 지연", color = "#2ca02c" }],
+          ]
+        }
+      },
+      # ── CloudFront 요청 및 오류율 ─────────────────────────────────────────
+      {
+        type   = "metric"
+        x      = 0
+        y      = 15
+        width  = 12
+        height = 6
+        properties = {
+          title  = "CloudFront — 요청 / 오류율"
+          region = "us-east-1"
+          view   = "timeSeries"
+          period = 300
+          metrics = [
+            ["AWS/CloudFront", "Requests", "DistributionId", var.cloudfront_distribution_id, "Region", "Global",
+              { stat = "Sum", label = "총 요청 수" }],
+            ["AWS/CloudFront", "4xxErrorRate", "DistributionId", var.cloudfront_distribution_id, "Region", "Global",
+              { stat = "Average", label = "4xx 오류율 (%)", color = "#ff7f0e", yAxis = "right" }],
+            ["AWS/CloudFront", "5xxErrorRate", "DistributionId", var.cloudfront_distribution_id, "Region", "Global",
+              { stat = "Average", label = "5xx 오류율 (%)", color = "#d62728", yAxis = "right" }],
+          ]
+          yAxis = {
+            right = { label = "오류율 (%)", max = 10 }
+            left  = { label = "요청 수" }
+          }
+        }
+      },
+      # ── CloudFront 캐시 적중률 ────────────────────────────────────────────
+      {
+        type   = "metric"
+        x      = 12
+        y      = 15
+        width  = 12
+        height = 6
+        properties = {
+          title  = "CloudFront — 캐시 적중률 (%)"
+          region = "us-east-1"
+          view   = "timeSeries"
+          period = 3600
+          metrics = [
+            ["AWS/CloudFront", "CacheHitRate", "DistributionId", var.cloudfront_distribution_id, "Region", "Global",
+              { stat = "Average", label = "캐시 적중률", color = "#2ca02c" }],
+          ]
+          annotations = {
+            horizontal = [
+              { value = 80, label = "목표 (80%)", color = "#ff7f0e" }
+            ]
+          }
+          yAxis = {
+            left = { min = 0, max = 100 }
+          }
+        }
+      },
+      # ── CloudFront 전송량 ─────────────────────────────────────────────────
+      {
+        type   = "metric"
+        x      = 0
+        y      = 21
+        width  = 12
+        height = 6
+        properties = {
+          title  = "CloudFront — 데이터 전송량 (Bytes)"
+          region = "us-east-1"
+          view   = "timeSeries"
+          period = 3600
+          metrics = [
+            ["AWS/CloudFront", "BytesDownloaded", "DistributionId", var.cloudfront_distribution_id, "Region", "Global",
+              { stat = "Sum", label = "다운로드" }],
+            ["AWS/CloudFront", "BytesUploaded", "DistributionId", var.cloudfront_distribution_id, "Region", "Global",
+              { stat = "Sum", label = "업로드", color = "#ff7f0e" }],
+          ]
+        }
+      },
+      # ── Lambda Cold Start (Init Duration) ─────────────────────────────────
+      {
+        type   = "metric"
+        x      = 12
+        y      = 21
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Lambda — Cold Start (Init Duration)"
+          region = var.aws_region
+          view   = "timeSeries"
+          period = 300
+          metrics = [
+            ["AWS/Lambda", "InitDuration", "FunctionName", var.lambda_function_name,
+              { stat = "Average", label = "평균 Init" }],
+            ["AWS/Lambda", "InitDuration", "FunctionName", var.lambda_function_name,
+              { stat = "Maximum", label = "최대 Init", color = "#d62728" }],
           ]
         }
       },

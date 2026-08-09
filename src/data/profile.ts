@@ -69,9 +69,9 @@ export const profile: Profile = {
     gpa: "4.06 / 4.5",
     majorGpa: "4.20",
   },
-  title: "사용자의 다음 행동을 설계하는 백엔드 엔지니어가 되겠습니다",
+  title: "서비스를 만들고, 인프라까지 책임지는 클라우드 네이티브 엔지니어",
   summary:
-    "Spring Boot 기반 백엔드 시스템을 설계·구현하며, 사용자 행동 데이터를 바탕으로 서비스를 개선하는 엔지니어를 목표로 하고 있습니다. AI/LLM 기반 생산성 향상에 관심이 많으며, 확장 가능한 아키텍처와 데이터 기반 의사결정으로 프로덕트 가치를 높이고 싶습니다.",
+    "Spring Boot 백엔드 개발부터 Terraform 기반 클라우드 인프라 설계·운영까지 End-to-End로 서비스를 구축합니다. Cloud Wave 7기와 실무 경험을 통해 AWS 아키텍처, CI/CD 파이프라인, 컨테이너 오케스트레이션을 익혔으며, AI/LLM을 활용한 운영 자동화에 관심이 많습니다.",
   bootcamp: [
     {
       name: "Cloud Wave 7기",
@@ -111,7 +111,7 @@ export const profile: Profile = {
     period: "2022.05.30 - 2023.11.29",
     status: "completed",
   },
-  keywords: ["Spring Boot / Backend", "AI · LLM"],
+  keywords: ["Cloud / Infra", "Backend", "AI · LLM"],
   links: {
     email: "eomkyeongmun@naver.com",
     phone: "010-4716-6629",

@@ -28,3 +28,8 @@ variable "alarm_email" {
   type        = string
   default     = null
 }
+
+variable "cloudfront_distribution_id" {
+  description = "모니터링 대상 CloudFront 배포 ID"
+  type        = string
+}

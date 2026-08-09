@@ -10,9 +10,9 @@ export const profile: Profile = {
     gpa: "4.06 / 4.5",
     majorGpa: "4.20 / 4.50",
   },
-  title: "Bridging AI Technology with Real-World Infrastructure and Services",
+  title: "Cloud-Native Engineer Who Builds Services and Owns the Infrastructure",
   summary:
-    "I am an aspiring cloud and infrastructure engineer with strong interests in cloud architecture, containerization, deployment automation, and scalable system design. Through hands-on experience building both serverless and Kubernetes-based platforms, I have developed practical skills in designing systems that emphasize reliability, security, operational efficiency, and automation.\n\nMy long-term career goal is to become an engineer who can design, automate, and operate scalable infrastructure that supports stable real-world services. I hope to continue growing into a cloud engineer who can bridge technical implementation with practical service operations and architecture design.",
+    "I build end-to-end — from Spring Boot backends to Terraform-managed cloud infrastructure. Through CJ OliveNetworks Cloud Wave and hands-on experience, I have developed practical skills in AWS architecture, CI/CD pipelines, and container orchestration, with a growing focus on AI/LLM-powered operational automation.",
   bootcamp: [
     {
       name: "Cloud Wave 7th Cohort",

@@ -127,11 +127,12 @@ module "api_gateway" {
 }
 
 module "monitoring" {
-  source               = "./modules/monitoring"
-  project_name         = var.project_name
-  environment          = var.environment
-  aws_region           = var.aws_region
-  lambda_function_name = module.lambda.lambda_function_name
-  api_id               = module.api_gateway.api_id
-  alarm_email          = var.alarm_email
+  source                       = "./modules/monitoring"
+  project_name                 = var.project_name
+  environment                  = var.environment
+  aws_region                   = var.aws_region
+  lambda_function_name         = module.lambda.lambda_function_name
+  api_id                       = module.api_gateway.api_id
+  alarm_email                  = var.alarm_email
+  cloudfront_distribution_id   = module.cloudfront.distribution_id
 }
