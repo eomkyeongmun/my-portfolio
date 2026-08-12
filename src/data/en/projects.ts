@@ -8,7 +8,7 @@ export const projects: Project[] = [
     overview: {
       description:
         "A study platform where people preparing for career transitions share resumes and practice mock interviews together. It started as a simple idea — 'online interview study groups would be convenient' — but once I actually deployed and started running it, I found myself facing a completely different kind of problem: 'how do I keep the costs under control to sustain a personal project long-term?'",
-      role: "Solely designed, implemented, and operating the entire stack: frontend (Next.js), backend (Spring Boot), infrastructure (Terraform), and CI/CD (GitHub Actions). I spent more time building 'a structure I can operate alone and reliably' than on feature development.",
+      role: "Solely designed, implemented, and operating the entire stack: frontend (Next.js), backend (Spring Boot), infrastructure (Terraform), and CI/CD (GitHub Actions). I spent more time building 'a structure I can operate alone and reliably' than on feature development. Once the features worked, I re-read the codebase from scratch looking for the places that run fine today but collapse when conditions change — concurrency, query growth, transaction boundaries, schema management — and fixed each one alongside a reproduction test.",
     },
     architecture: {
       diagram: "/images/crossview_arch.svg",
@@ -54,6 +54,24 @@ export const projects: Project[] = [
         reason:
           "CI spins up PostgreSQL and Redis service containers to test against real databases. CD temporarily opens the SSH port only to the GitHub Actions runner's IP during deployment, then closes it when done — whether the deploy succeeds or fails. I built this because leaving SSH open 24/7 made me uneasy.",
       },
+      {
+        name: "Flyway",
+        role: "Database schema version control",
+        reason:
+          "I started with ddl-auto=update. It was fast to develop against, but it leaves you unable to answer 'what state is production actually in?' from the code. Dropped columns never get applied, nothing is reversible, and there is nothing to review. Moving to Flyway turned schema changes into SQL files that go through code review, and left JPA with a single job via ddl-auto=validate: fail startup when entities and the real schema diverge. Failing at deploy time is far better than discovering a missing column at runtime.",
+      },
+      {
+        name: "JUnit 5 / Mockito / Spring Test",
+        role: "Separate unit, slice, and integration test layers",
+        reason:
+          "Writing everything as @SpringBootTest makes the suite so slow you stop running it; mocking everything means you never verify that a query even executes. So I matched the tool to what is being verified: business rules as fast Mockito unit tests, request validation and authenticated-parameter resolution as @WebMvcTest slices, and QueryDSL dynamic queries plus migrations as integration tests against real PostgreSQL. DB-dependent tests are gated on an environment variable, so the rest of the suite always runs even without a database locally.",
+      },
+      {
+        name: "Custom AI abstraction over AWS SDK",
+        role: "Port for AI calls + prompts as objects",
+        reason:
+          "As AI features grew, error-log analysis and resume analysis were each calling Bedrock their own way, with prompts assembled inline via StringBuilder inside service code. I collapsed the calls behind a single AiChatClient interface, confining the vendor SDK to the implementation, and extracted each prompt into its own type. Prompts are policy that changes often; services are flow — different reasons to change. Now swapping models is a config line, and editing a prompt touches exactly one class.",
+      },
     ],
     problemSolving: [
       {
@@ -78,6 +96,46 @@ export const projects: Project[] = [
       },
       {
         issue:
+          "Re-reading the join logic, I realized a 6-person group could logically end up with 7 members.",
+        analysis:
+          "The flow was 'check capacity, then add the member' — and I had missed that another request can slip between those two steps. With one seat left, two simultaneous requests both see room and both insert. Duplicate joins are caught by the unique(user_id, group_id) constraint, but 'member count <= capacity' is not the kind of condition a database constraint can express, so the application has to guarantee it. Worse, the capacity check read the JPA collection size, and a collection loaded into the persistence context cannot see a member another transaction just inserted — it was the wrong basis for the decision to begin with. I wrote the reproduction test first: with a 2-person group that already had its owner, 10 concurrent join requests all succeeded.",
+        solution:
+          "I took a write lock on the group row (SELECT ... FOR UPDATE) to serialize joins for that group. I considered optimistic locking, but inserting a membership does not modify the group row, so no version would ever bump. Since the lock scope is a single group, joins to different groups never wait on each other, which made pessimistic locking the right fit. The capacity check now uses a COUNT query instead of the collection size. Duplicate joins still rely on the unique constraint as the last line of defense, but saveAndFlush surfaces the violation inside the service so it can be translated into a domain error — with plain save, the INSERT is deferred to commit, the exception escapes the service, and the user gets a 500. The recruitment-approval path had the same race, so it got the same treatment.",
+        result:
+          "In the same reproduction test, exactly 1 of 10 succeeded and the rest were rejected as full, leaving exactly 2 members. To confirm the test actually catches regressions rather than passing by coincidence, I removed the lock again and watched it fail immediately (expected 1, got 10). Race conditions cannot be reproduced with mocks, and a rollback-based @Transactional test cannot run multiple transactions at once, so this lives as an integration test using a real database and real threads.",
+      },
+      {
+        issue:
+          "A single screen — the group member list — was issuing queries in proportion to the number of members.",
+        analysis:
+          "The member list shows each member's profile and the resumes they shared with that group, and the implementation looped over members issuing one profile query and one shared-resume query per member. Six members meant 13 queries, growing linearly. Auditing the codebase surfaced three variants: (1) the classic N+1 of querying inside a loop, (2) a response DTO touching group.getMemberships() to display a single number (current headcount), loading every membership row for it, and (3) list responses referencing associations with neither fetch join nor entity graph, adding a query per row. On top of that, I had overlooked that PostgreSQL does not create indexes for foreign key constraints, so lookups by group_id and user_id were all sequential scans.",
+        solution:
+          "For (1) I collected the member IDs and replaced the loop with two IN-clause queries mapped in memory, fixing the count at 3 regardless of group size. For (2) I replaced collection loading with a COUNT aggregate, and for list views grouped the counts into a single GROUP BY query. For (3) I declared only the associations the response actually needs via @EntityGraph. Indexes were added as a Flyway migration — 17 of them, shaped around real query patterns like 'question lists for a target member in a group, newest first' rather than blindly indexing every FK, including composite columns and sort direction.",
+        result:
+          "The member list dropped from 13 queries to 3 for six members, and stays at 3 as the group grows. To prevent regressions I added a test asserting that profiles and shared resumes are each fetched exactly once no matter how many members exist, so reintroducing a query inside a loop breaks the build. More than the raw numbers, locking in the property that 'query count does not scale with data volume' is the part that lasts.",
+      },
+      {
+        issue:
+          "Some APIs were structured such that updates might not persist, or an email could go out while the data itself rolled back.",
+        analysis:
+          "Four controllers were injecting repositories directly instead of going through a service. Without a transaction boundary, read, modify, and save each ran in their own transaction, JPA dirty checking never kicked in, and correctness depended on remembering to call save(). The opposite problem existed too: group invitations, schedule notifications, and application alerts all called SMTP inside @Transactional. That holds a database connection while waiting on an external server — a path to connection pool exhaustion — and worse, if something later threw and rolled back, the email had already left and could not be recalled.",
+        solution:
+          "I moved the logic out of controllers into services so transaction boundaries are explicit, leaving controllers with request validation and response mapping. Email sending was replaced with a domain event handled by @TransactionalEventListener(AFTER_COMMIT), so mail only goes out once the commit is confirmed and SMTP calls happen outside the transaction. Some events (like verification codes) are published without a transaction, so fallbackExecution makes those run immediately — with the default, they would be silently dropped. As a side effect, adding another notification channel no longer touches business services.",
+        result:
+          "Update APIs now work through dirty checking, redundant save() calls are gone, and a test locks that in by asserting save is never called on update. There are now zero places where external I/O happens inside a transaction. Working through this made concrete something I had only read about: layering is not about tidiness, it is about placing the boundaries for transactions, exceptions, and reuse.",
+      },
+      {
+        issue:
+          "Production schema was managed by ddl-auto=update, which meant the code could not tell me what state the database was actually in.",
+        analysis:
+          "Hibernate reshaping tables on entity changes was convenient, but it leaves no history, nothing to roll back, and nothing to review. Column drops and type changes are not applied at all, so over time the schema the entities describe and the schema that exists quietly diverge. At the same time, introducing a migration tool against a database that already holds real data made me cautious: done carelessly, the first deploy tries to recreate existing tables and fails, or worse, touches data.",
+        solution:
+          "I first extracted the DDL Hibernate actually generates from the entities and made that the V1 baseline — starting from the real artifact rather than hand-writing something that could subtly differ from production. Then baseline-on-migrate makes a database that already has tables record V1 as applied without executing it, so production is untouched and only V2 (indexes) runs. Fresh databases (local, CI) execute V1 onward, keeping environments identical. Finally ddl-auto moved to validate, so a mismatch between entities and the real schema fails startup.",
+        result:
+          "I verified both paths against real PostgreSQL 16 before deploying. On an empty database V1 and V2 applied in order; on a database with the pre-existing schema, V1 was recorded as a baseline and only V2 ran, adding the 17 indexes. Both passed ddl-auto=validate. Schema changes are now SQL files reviewed in pull requests, and the current production state is traceable through Git history.",
+      },
+      {
+        issue:
           "Keeping EC2's SSH port (22) open 24/7 for deployment automation was a security concern.",
         analysis:
           "The CD pipeline SSHes into EC2 to deploy, but opening port 22 to 0.0.0.0/0 exposes it to brute-force attempts. Deployments happen a few times a day at most — leaving the port open around the clock was both wasteful and risky.",
@@ -89,11 +147,11 @@ export const projects: Project[] = [
     ],
     retrospective: {
       improvements:
-        "What I learned most from this project wasn't 'how to build features' — it was 'how to balance operational cost against reliability.' Dropping RDS, designing AI cost controls, automating deployment security — all of these came from asking 'what's the right level for this service's scale?'",
+        "The first half of this project taught me how to balance operational cost against reliability — dropping RDS, designing AI cost controls, automating deployment security all came from asking 'what is the right level for this service's scale?' In the second half my attention moved inward. With everything working, I re-read the code asking whether it would hold up under load, and that surfaced the capacity race condition, queries growing with member count, APIs running without transaction boundaries, and schema changes with no history. All of them were the kind that run fine today and break when conditions change — and none would ever show up in a feature test. So I made a rule of writing the reproduction test before the fix, and for the concurrency bug I deliberately reverted the fix afterward to confirm the test failed. That was when it clicked that a test passing matters less than whether it fails when the code is wrong.",
       regrets:
-        "Monitoring is heavily skewed toward error alerting; performance metrics (response times, DB query latency) are still lacking. CloudWatch alarms focus on CPU, and application-level observability needs strengthening.",
+        "Monitoring is still skewed toward error alerting; performance metrics (response times, query latency) remain thin. I added Prometheus and Grafana, but the dashboards are mostly system-level, so the very problems I just fixed — N+1 patterns, lock waits — are not yet observable as metrics. I also validated the performance work only by query count, never by putting real load on the system to see how response times actually change. Pessimistic locking is a safe choice at this scale, but I have no data on how contention builds when requests pile onto a popular group.",
       futureWork:
-        "Add Prometheus + Grafana for application metrics collection, and automate backup recovery testing to regularly verify that the 24-hour RPO actually holds.",
+        "Build k6 load-test scenarios to measure before/after in response time and throughput, and surface lock wait time and connection pool utilization on the Grafana dashboard. Automate backup recovery testing so the 24-hour RPO is verified rather than assumed. On the code side, I am considering extending domain events beyond notifications — replacing the current approach where a service deletes a group's child data in a fixed order with an event-driven one.",
     },
     links: {
       github: "https://github.com/eomkyeongmun/my_own",
