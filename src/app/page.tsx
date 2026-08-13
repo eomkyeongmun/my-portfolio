@@ -5,6 +5,7 @@ import { skills } from "@/data/skills";
 import { projects } from "@/data/projects";
 import { highlights } from "@/data/highlights";
 import { certifications } from "@/data/certifications";
+import { awards } from "@/data/awards";
 
 const categoryColor: Record<string, string> = {
   장애대응: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -299,6 +300,33 @@ export default function Home() {
                 </div>
                 <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 sm:pt-0.5 shrink-0">
                   {cert.date}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Awards ───────────────────────────────────────── */}
+      {awards.length > 0 && (
+        <section>
+          <SectionLabel>awards</SectionLabel>
+          <div className="border-l-2 border-emerald-200 dark:border-emerald-800 pl-4 space-y-4">
+            {awards.map((award, idx) => (
+              <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-8">
+                <div>
+                  <p className="font-semibold text-neutral-900 dark:text-neutral-100">
+                    {award.name} · {award.prize}
+                  </p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{award.organizer}</p>
+                  {award.description && (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {award.description}
+                    </p>
+                  )}
+                </div>
+                <p className="sm:ml-auto font-mono text-xs text-neutral-500 dark:text-neutral-400 sm:pt-0.5 shrink-0">
+                  {award.date}
                 </p>
               </div>
             ))}
