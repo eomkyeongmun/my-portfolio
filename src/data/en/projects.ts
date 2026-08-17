@@ -40,7 +40,7 @@ export const projects: Project[] = [
         name: "Bedrock Claude Haiku + Logback",
         role: "Automated error analysis and alerting",
         reason:
-          "Receiving raw error logs by email meant I had to judge 'is this urgent or ignorable?' every time. Automating root-cause analysis and severity assessment with Haiku cut that cognitive load. To control costs: 50-line context cap, 10-minute dedup cooldown, async thread pool capped at 3. The design uses AI while keeping costs predictable.",
+          "Receiving raw error logs by email meant I had to judge 'is this urgent or ignorable?' every time. Haiku takes over that judgment call — root-cause analysis and severity assessment — and in exchange I capped context at 50 lines, added a 10-minute dedup cooldown, and limited the async thread pool to 3, so the cost of running it stays bounded.",
       },
       {
         name: "Terraform",
@@ -49,28 +49,10 @@ export const projects: Project[] = [
           "With 10+ resources (EC2, S3, Security Groups, CloudWatch alarms...), managing them through the console would inevitably lead to 'why is this security group rule open?' Code preserves intent in version history and makes the entire environment reproducible.",
       },
       {
-        name: "GitHub Actions CI/CD",
-        role: "Build, test, and deployment automation",
-        reason:
-          "CI spins up PostgreSQL and Redis service containers to test against real databases. CD temporarily opens the SSH port only to the GitHub Actions runner's IP during deployment, then closes it when done — whether the deploy succeeds or fails. I built this because leaving SSH open 24/7 made me uneasy.",
-      },
-      {
         name: "Flyway",
         role: "Database schema version control",
         reason:
           "I started with ddl-auto=update. It was fast to develop against, but it leaves you unable to answer 'what state is production actually in?' from the code. Dropped columns never get applied, nothing is reversible, and there is nothing to review. Moving to Flyway turned schema changes into SQL files that go through code review, and left JPA with a single job via ddl-auto=validate: fail startup when entities and the real schema diverge. Failing at deploy time is far better than discovering a missing column at runtime.",
-      },
-      {
-        name: "JUnit 5 / Mockito / Spring Test",
-        role: "Separate unit, slice, and integration test layers",
-        reason:
-          "Writing everything as @SpringBootTest makes the suite so slow you stop running it; mocking everything means you never verify that a query even executes. So I matched the tool to what is being verified: business rules as fast Mockito unit tests, request validation and authenticated-parameter resolution as @WebMvcTest slices, and QueryDSL dynamic queries plus migrations as integration tests against real PostgreSQL. DB-dependent tests are gated on an environment variable, so the rest of the suite always runs even without a database locally.",
-      },
-      {
-        name: "Custom AI abstraction over AWS SDK",
-        role: "Port for AI calls + prompts as objects",
-        reason:
-          "As AI features grew, error-log analysis and resume analysis were each calling Bedrock their own way, with prompts assembled inline via StringBuilder inside service code. I collapsed the calls behind a single AiChatClient interface, confining the vendor SDK to the implementation, and extracted each prompt into its own type. Prompts are policy that changes often; services are flow — different reasons to change. Now swapping models is a config line, and editing a prompt touches exactly one class.",
       },
     ],
     problemSolving: [
@@ -80,19 +62,19 @@ export const projects: Project[] = [
         analysis:
           "RDS db.t3.micro alone was ~$15/month; add storage and backup costs and it approached the EC2 t3.medium cost (~$30). For a study platform with dozens of users, Multi-AZ failover and automatic backups felt like paying for insurance I'd never claim. I realized I could 'build just the level of reliability I actually need' and cut costs in half.",
         solution:
-          "Removed RDS and switched to Docker PostgreSQL on EC2. Automated daily backups at 3 AM via Spring Batch: pg_dump → S3 upload → local cleanup (files older than 7 days). The S3 bucket has a 30-day lifecycle policy, so backup storage costs are also automatically controlled.",
+          "Removed RDS and switched to Docker PostgreSQL on EC2, and split the backup job into three Spring Batch Steps: pg_dump → S3 upload → local cleanup. The ordering matters: if the S3 upload fails but the next Step (local cleanup) runs anyway, the original file could end up nowhere — not in S3, not on disk. So a failed upload throws and stops the Job right there, before cleanup ever runs. The S3 bucket also carries a 30-day lifecycle policy, so backup storage is pruned automatically too.",
         result:
-          "DB-related monthly costs dropped from ~$15 to ~$0.1 (S3 storage). Accepting an RPO of 24 hours was a deliberate tradeoff matched to the service's actual requirements.",
+          "DB-related monthly costs dropped from ~$15 to effectively $0 — comfortably inside the S3 free tier (5GB). Accepting an RPO of 24 hours was a deliberate tradeoff matched to the service's actual requirements.",
       },
       {
         issue:
           "When error alert emails arrived at odd hours, manually reading stack traces and judging severity every time was draining.",
         analysis:
-          "Forwarding raw logs was 'notification,' not 'analysis.' In a solo-operated project, manually triaging every error isn't sustainable. I needed AI to handle first-pass analysis, but the cost had to stay controllable.",
+          "Forwarding raw logs was 'notification,' not 'analysis.' In a solo-operated project, manually triaging every error isn't sustainable. But handing that judgment to AI raised a new question — 'can I actually leave this running?' — and I didn't want the cost of automation to eat the benefit of it.",
         solution:
-          "A custom Logback Appender catches ERROR-level logs from the com.crossview package, excluding the alert service's own logs to prevent infinite loops. Caught errors are processed asynchronously with hash-based 10-minute dedup cooldown, then sent to Bedrock Haiku with the last 50 log lines for root-cause analysis, severity assessment, and remediation suggestions — delivered via email and Slack. Thread pool capped at 3, context limited to 50 lines — keeping AI call costs within a predictable range.",
+          "A custom Logback Appender catches only ERROR-level logs from the com.crossview package, excluding the alert service's own logs to prevent infinite loops. Caught errors are processed asynchronously with a hash-based 10-minute dedup cooldown, then sent to Bedrock Haiku with the last 50 log lines for root-cause analysis, severity assessment, and remediation suggestions — delivered via email and Slack. Thread pool capped at 3, context limited to 50 lines, so the cost stays bounded no matter how noisy things get.",
         result:
-          "Error alerts now arrive with AI analysis, so I can judge 'do I need to look at this now?' from the subject line alone. Haiku costs stay under $1/month.",
+          "I can now judge 'do I need to look at this right now?' from the AI summary in the subject line alone. Early on, though, both real server bugs and client-side mistakes triggered alerts — after a few days of that noise, I tightened the filter so only genuine server errors page me.",
       },
       {
         issue:
@@ -100,29 +82,19 @@ export const projects: Project[] = [
         analysis:
           "The flow was 'check capacity, then add the member' — and I had missed that another request can slip between those two steps. With one seat left, two simultaneous requests both see room and both insert. Duplicate joins are caught by the unique(user_id, group_id) constraint, but 'member count <= capacity' is not the kind of condition a database constraint can express, so the application has to guarantee it. Worse, the capacity check read the JPA collection size, and a collection loaded into the persistence context cannot see a member another transaction just inserted — it was the wrong basis for the decision to begin with. I wrote the reproduction test first: with a 2-person group that already had its owner, 10 concurrent join requests all succeeded.",
         solution:
-          "I took a write lock on the group row (SELECT ... FOR UPDATE) to serialize joins for that group. I considered optimistic locking, but inserting a membership does not modify the group row, so no version would ever bump. Since the lock scope is a single group, joins to different groups never wait on each other, which made pessimistic locking the right fit. The capacity check now uses a COUNT query instead of the collection size. Duplicate joins still rely on the unique constraint as the last line of defense, but saveAndFlush surfaces the violation inside the service so it can be translated into a domain error — with plain save, the INSERT is deferred to commit, the exception escapes the service, and the user gets a 500. The recruitment-approval path had the same race, so it got the same treatment.",
+          "I took a write lock on the group row (SELECT ... FOR UPDATE) to serialize joins for that group. I considered optimistic locking, but inserting a membership does not modify the group row, so no version would ever bump. Since the lock scope is a single group, joins to different groups never wait on each other, which made pessimistic locking the right fit. The capacity check now uses a COUNT query instead of the collection size. Duplicate joins still rely on the unique constraint as the last line of defense, but saveAndFlush surfaces the violation inside the service so it can be translated into a domain error — with plain save, the INSERT is deferred to commit, the exception escapes the service, and the user gets a 500. As a safety net for any path I might have missed, I also added a DataIntegrityViolationException handler in the GlobalExceptionHandler that maps to a 409. The recruitment-approval path had the same race, so it got the same treatment.",
         result:
-          "In the same reproduction test, exactly 1 of 10 succeeded and the rest were rejected as full, leaving exactly 2 members. To confirm the test actually catches regressions rather than passing by coincidence, I removed the lock again and watched it fail immediately (expected 1, got 10). Race conditions cannot be reproduced with mocks, and a rollback-based @Transactional test cannot run multiple transactions at once, so this lives as an integration test using a real database and real threads.",
+          "In the same reproduction test, exactly 1 of 10 succeeded and the rest were rejected as full, leaving exactly 2 members. I also verified that 5 concurrent requests from the same user still produce exactly 1 membership. To confirm the test actually catches regressions rather than passing by coincidence, I removed the lock again and watched it fail immediately (expected 1, got 10). Race conditions cannot be reproduced with mocks, and a rollback-based @Transactional test cannot run multiple transactions at once, so this lives as an integration test using a real database and real threads. This work brought the full suite to 50 passing tests.",
       },
       {
         issue:
-          "A single screen — the group member list — was issuing queries in proportion to the number of members.",
+          "The recruitment board's 'current members' count was computed as group.getMemberships().size() — loading every membership row just to display a single number.",
         analysis:
-          "The member list shows each member's profile and the resumes they shared with that group, and the implementation looped over members issuing one profile query and one shared-resume query per member. Six members meant 13 queries, growing linearly. Auditing the codebase surfaced three variants: (1) the classic N+1 of querying inside a loop, (2) a response DTO touching group.getMemberships() to display a single number (current headcount), loading every membership row for it, and (3) list responses referencing associations with neither fetch join nor entity graph, adding a query per row. On top of that, I had overlooked that PostgreSQL does not create indexes for foreign key constraints, so lookups by group_id and user_id were all sequential scans.",
+          "The screen only needs a count, but the whole collection was landing in the persistence context to produce it. A detail view (one group) can just run a single COUNT query, but a list view has many groups on one page — counting each group separately would just be a different N+1. So a single-item view and a list view can't be solved the same way.",
         solution:
-          "For (1) I collected the member IDs and replaced the loop with two IN-clause queries mapped in memory, fixing the count at 3 regardless of group size. For (2) I replaced collection loading with a COUNT aggregate, and for list views grouped the counts into a single GROUP BY query. For (3) I declared only the associations the response actually needs via @EntityGraph. Indexes were added as a Flyway migration — 17 of them, shaped around real query patterns like 'question lists for a target member in a group, newest first' rather than blindly indexing every FK, including composite columns and sort direction.",
+          "I introduced a projection interface, GroupMemberCount (groupId, memberCount), and for list views, collected all the group IDs on the page and ran one IN + GROUP BY query to aggregate member counts into a Map. For the detail view, where there's exactly one group, batching adds nothing, so it keeps a plain COUNT query. Same underlying problem, different fix depending on the calling context.",
         result:
-          "The member list dropped from 13 queries to 3 for six members, and stays at 3 as the group grows. To prevent regressions I added a test asserting that profiles and shared resumes are each fetched exactly once no matter how many members exist, so reintroducing a query inside a loop breaks the build. More than the raw numbers, locking in the property that 'query count does not scale with data volume' is the part that lasts.",
-      },
-      {
-        issue:
-          "Some APIs were structured such that updates might not persist, or an email could go out while the data itself rolled back.",
-        analysis:
-          "Four controllers were injecting repositories directly instead of going through a service. Without a transaction boundary, read, modify, and save each ran in their own transaction, JPA dirty checking never kicked in, and correctness depended on remembering to call save(). The opposite problem existed too: group invitations, schedule notifications, and application alerts all called SMTP inside @Transactional. That holds a database connection while waiting on an external server — a path to connection pool exhaustion — and worse, if something later threw and rolled back, the email had already left and could not be recalled.",
-        solution:
-          "I moved the logic out of controllers into services so transaction boundaries are explicit, leaving controllers with request validation and response mapping. Email sending was replaced with a domain event handled by @TransactionalEventListener(AFTER_COMMIT), so mail only goes out once the commit is confirmed and SMTP calls happen outside the transaction. Some events (like verification codes) are published without a transaction, so fallbackExecution makes those run immediately — with the default, they would be silently dropped. As a side effect, adding another notification channel no longer touches business services.",
-        result:
-          "Update APIs now work through dirty checking, redundant save() calls are gone, and a test locks that in by asserting save is never called on update. There are now zero places where external I/O happens inside a transaction. Working through this made concrete something I had only read about: layering is not about tidiness, it is about placing the boundaries for transactions, exceptions, and reuse.",
+          "List queries now issue exactly one aggregate query regardless of how many groups are on the page. The same change grew the test suite covering this logic from 24 to 48 tests, locking in the regression.",
       },
       {
         issue:
@@ -134,20 +106,10 @@ export const projects: Project[] = [
         result:
           "I verified both paths against real PostgreSQL 16 before deploying. On an empty database V1 and V2 applied in order; on a database with the pre-existing schema, V1 was recorded as a baseline and only V2 ran, adding the 17 indexes. Both passed ddl-auto=validate. Schema changes are now SQL files reviewed in pull requests, and the current production state is traceable through Git history.",
       },
-      {
-        issue:
-          "Keeping EC2's SSH port (22) open 24/7 for deployment automation was a security concern.",
-        analysis:
-          "The CD pipeline SSHes into EC2 to deploy, but opening port 22 to 0.0.0.0/0 exposes it to brute-force attempts. Deployments happen a few times a day at most — leaving the port open around the clock was both wasteful and risky.",
-        solution:
-          "The GitHub Actions CD workflow queries the runner's public IP, opens SSH only for that IP in the Security Group, deploys, then removes the rule on completion — on both success and failure. The port is open only during deployment, only to the specific IP that needs it.",
-        result:
-          "SSH port exposure dropped from 24 hours to a few minutes per deployment, maintaining automation without sacrificing security.",
-      },
     ],
     retrospective: {
       improvements:
-        "The first half of this project taught me how to balance operational cost against reliability — dropping RDS, designing AI cost controls, automating deployment security all came from asking 'what is the right level for this service's scale?' In the second half my attention moved inward. With everything working, I re-read the code asking whether it would hold up under load, and that surfaced the capacity race condition, queries growing with member count, APIs running without transaction boundaries, and schema changes with no history. All of them were the kind that run fine today and break when conditions change — and none would ever show up in a feature test. So I made a rule of writing the reproduction test before the fix, and for the concurrency bug I deliberately reverted the fix afterward to confirm the test failed. That was when it clicked that a test passing matters less than whether it fails when the code is wrong.",
+        "The first half of this project taught me how to balance operational cost against reliability — dropping RDS and designing AI cost controls both came from asking 'what is the right level for this service's scale?' In the second half my attention moved inward. With everything working, I re-read the code asking whether it would hold up under load, and that surfaced the capacity race condition, a member-count query pattern that repeated itself, and schema changes with no history. All of them were the kind that run fine today and break when conditions change — and none would ever show up in a feature test. So I made a rule of writing the reproduction test before the fix, and for the concurrency bug I deliberately reverted the fix afterward to confirm the test failed. That was when it clicked that a test passing matters less than whether it fails when the code is wrong.",
       regrets:
         "Monitoring is still skewed toward error alerting; performance metrics (response times, query latency) remain thin. I added Prometheus and Grafana, but the dashboards are mostly system-level, so the very problems I just fixed — N+1 patterns, lock waits — are not yet observable as metrics. I also validated the performance work only by query count, never by putting real load on the system to see how response times actually change. Pessimistic locking is a safe choice at this scale, but I have no data on how contention builds when requests pile onto a popular group.",
       futureWork:
