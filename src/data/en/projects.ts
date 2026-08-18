@@ -13,7 +13,7 @@ export const projects: Project[] = [
     architecture: {
       diagram: "/images/crossview_arch.svg",
       description:
-        "Spring Boot, PostgreSQL, Redis, and Next.js run together via Docker Compose on a single EC2 instance. DB backups are automated with Spring Batch: pg_dump → S3 upload → local cleanup, running daily at 3 AM. When an error occurs, a custom Logback Appender catches it, sends it to Bedrock Claude Haiku for root-cause analysis, and delivers the result via email and Slack.",
+        "Spring Boot, PostgreSQL, Redis, and Next.js run together via Docker Compose on a single EC2 instance. DB backups are automated with Spring Batch: pg_dump → S3 upload → local cleanup, running daily at 3 AM. When an error occurs, a custom Logback Appender catches it, sends it to Bedrock Claude Haiku for root-cause analysis, and delivers the result via email and Slack. More recently I added a remote-ops layer: Claude Code runs resident inside the server under tmux+systemd, reachable from my phone over outbound-only remote-control, so an incident alert lets me direct a fix — code change → git push → confirm the existing CD pipeline deploys it — from wherever I am.",
       reasoning:
         "My first instinct was to use RDS — it's the obvious choice. But when I priced it out, even a db.t3.micro came to ~$15/month, and with storage and backup costs on top, it rivaled the EC2 bill itself. I asked myself: 'Does this service actually need RDS-level availability?' Honestly, for a study platform with a few dozen users, Multi-AZ failover was overkill. So I put PostgreSQL in Docker on EC2 and covered the data loss risk with daily S3 backups. An RPO of 24 hours means 'worst case, I lose one day of data' — and for this service, that's an acceptable tradeoff. For error alerting, I originally planned to just collect logs and email them. But after waking up to error emails at 3 AM and having to judge 'is this urgent or not?' every single time, it got exhausting. So I plugged in Bedrock Claude — but to keep costs predictable, I chose the cheapest Haiku model, capped context at 50 recent log lines, and added a 10-minute dedup cooldown for identical errors. The principle was: 'use AI, but never let the cost become unpredictable.'",
     },
@@ -53,6 +53,12 @@ export const projects: Project[] = [
         role: "Database schema version control",
         reason:
           "I started with ddl-auto=update. It was fast to develop against, but it leaves you unable to answer 'what state is production actually in?' from the code. Dropped columns never get applied, nothing is reversible, and there is nothing to review. Moving to Flyway turned schema changes into SQL files that go through code review, and left JPA with a single job via ddl-auto=validate: fail startup when entities and the real schema diverge. Failing at deploy time is far better than discovering a missing column at runtime.",
+      },
+      {
+        name: "Claude Code (Remote Control)",
+        role: "AI agent resident on the server for remote ops",
+        reason:
+          "Getting an incident email at night was useless if I wasn't at my computer to act on it. Leaving SSH open around the clock for phone access would have broken this server's security model, which closes port 22 by default. Remote-control keeps only an outbound connection alive, and I withheld deploy rights from it — it can commit and git push, nothing more — so the existing CD pipeline's build, health check, and rollback safeguards stay exactly as they were.",
       },
     ],
     problemSolving: [
@@ -105,6 +111,16 @@ export const projects: Project[] = [
           "I first extracted the DDL Hibernate actually generates from the entities and made that the V1 baseline — starting from the real artifact rather than hand-writing something that could subtly differ from production. Then baseline-on-migrate makes a database that already has tables record V1 as applied without executing it, so production is untouched and only V2 (indexes) runs. Fresh databases (local, CI) execute V1 onward, keeping environments identical. Finally ddl-auto moved to validate, so a mismatch between entities and the real schema fails startup.",
         result:
           "I verified both paths against real PostgreSQL 16 before deploying. On an empty database V1 and V2 applied in order; on a database with the pre-existing schema, V1 was recorded as a baseline and only V2 ran, adding the 17 indexes. Both passed ddl-auto=validate. Schema changes are now SQL files reviewed in pull requests, and the current production state is traceable through Git history.",
+      },
+      {
+        issue:
+          "An incident email at 3 AM was useless if I wasn't at my computer — I wanted to direct a fix from my phone, from code change through deploy confirmation, without being physically present.",
+        analysis:
+          "My first instinct — SSH plus a persistent tmux session — collided with this server's deploy pipeline (cd.yml), which keeps port 22 closed by default and only opens it to the GitHub Actions runner's IP for the duration of a deploy. Leaving SSH open around the clock for phone access would have broken that security model outright. There was also a structural trap: the deploy directory (/app/repo) gets overwritten by git reset --hard on every deploy, so if a server-resident AI edited files directly without pushing them, the next deploy would silently wipe the fix.",
+        solution:
+          "I switched to Claude Code's /remote-control feature. Unlike SSH, where the client connects inbound to the server, the server-side Claude Code process keeps an outbound connection to Anthropic open, and the phone connects the same way and gets relayed through — no inbound port ever opens. I withheld deploy rights from it: it can commit and git push, nothing further, so the fix flows through the already-verified CD pipeline's build, health check, and rollback safeguards instead of a new, unproven path. tmux plus systemd means the session survives a server reboot automatically, and ~/.claude/settings.json splits permissions into allow (git operations, read-only checks), ask (deletion, sudo, service restarts), and deny (destructive commands) so the auto-approved scope stays bounded even when I'm not watching closely. When I lost the SSH private key partway through setup and couldn't reach the server at all, I didn't cut a new backdoor — I reused the SSH secrets the CD pipeline already held, via a workflow_dispatch workflow, to build an install/diagnose channel instead.",
+        result:
+          "The system got tested for real almost immediately: a 502 appeared right after resizing the instance. I initially suspected the resize, but the deploy history showed the previous deploy had already died on a failed health check before the resize even started — and on top of that, cd.yml's failure-log step was printing logs for the wrong container name (app-app-1 instead of the actual crossview-app), so the crash logs had never once been visible. Chasing the deploy history and the logging bug instead of trusting the obvious-looking cause led to the real one — t3.micro's CPU credit limits plus a health-check timeout — and only then did redeploys start succeeding again, with the remote-ops setup proving itself in production on day one.",
       },
     ],
     retrospective: {
