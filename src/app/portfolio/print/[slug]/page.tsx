@@ -119,11 +119,11 @@ export default async function PrintPage({ params }: { params: Promise<{ slug: st
         {/* ── Retrospective ────────────────────────────────── */}
         <section className="print-break-avoid">
           <PrintSectionTitle>회고</PrintSectionTitle>
-          <dl className="space-y-3 text-sm">
-            <PrintDL label="개선점" value={project.retrospective.improvements} />
-            <PrintDL label="아쉬운 점" value={project.retrospective.regrets} />
-            <PrintDL label="향후 방향" value={project.retrospective.futureWork} />
-          </dl>
+          <div className="space-y-2 text-sm leading-relaxed text-neutral-800">
+            {project.retrospective.split("\n\n").map((para, i) => (
+              <p key={i}>{para}</p>
+            ))}
+          </div>
         </section>
 
       </div>

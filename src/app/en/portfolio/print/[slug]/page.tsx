@@ -168,11 +168,11 @@ export default async function PrintPageEn({ params }: { params: Promise<{ slug: 
         {/* ── Retrospective ────────────────────────────────── */}
         <section className="print-break-avoid">
           <PrintSectionTitle>Retrospective</PrintSectionTitle>
-          <dl className="space-y-3 text-sm">
-            <PrintDL label="Improvements" value={project.retrospective.improvements} />
-            <PrintDL label="Regrets"      value={project.retrospective.regrets} />
-            <PrintDL label="Next Steps"   value={project.retrospective.futureWork} />
-          </dl>
+          <div className="space-y-2 text-sm leading-relaxed text-neutral-800">
+            {project.retrospective.split("\n\n").map((para, i) => (
+              <p key={i}>{para}</p>
+            ))}
+          </div>
         </section>
 
       </div>

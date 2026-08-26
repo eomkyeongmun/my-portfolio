@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { projects } from "@/data/projects";
-import { PdfDownloadButton } from "@/components/PdfDownloadButton";
 
 export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.category }));
@@ -27,12 +26,6 @@ const categoryColor: Record<string, string> = {
   infrastructure: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   devops:         "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
   ai:             "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
-};
-
-const retroConfig: Record<string, { border: string; label: string; icon: string }> = {
-  "개선점":    { border: "border-t-amber-400 dark:border-t-amber-500",  label: "text-amber-700 dark:text-amber-400",  icon: "⚙" },
-  "아쉬운 점": { border: "border-t-rose-400 dark:border-t-rose-500",    label: "text-rose-700 dark:text-rose-400",    icon: "△" },
-  "향후 방향": { border: "border-t-blue-400 dark:border-t-blue-500",    label: "text-blue-700 dark:text-blue-400",    icon: "→" },
 };
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -74,7 +67,6 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         </div>
         {/* Links */}
         <div className="flex flex-wrap items-center gap-3 mt-6">
-          <PdfDownloadButton slug={project.category} projectTitle={project.title} variant="outline" />
           {project.confidential && (
             <span className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400">
               <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -178,10 +170,12 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       {/* ── Retrospective ────────────────────────────────── */}
       <section className="pb-8">
         <SectionTitle>회고</SectionTitle>
-        <div className="grid sm:grid-cols-3 gap-4">
-          <RetroCard label="개선점" value={project.retrospective.improvements} />
-          <RetroCard label="아쉬운 점" value={project.retrospective.regrets} />
-          <RetroCard label="향후 방향" value={project.retrospective.futureWork} />
+        <div className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 border-t-2 border-t-amber-400 dark:border-t-amber-500 space-y-4">
+          {project.retrospective.split("\n\n").map((para, i) => (
+            <p key={i} className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 leading-relaxed">
+              {para}
+            </p>
+          ))}
         </div>
       </section>
 
@@ -196,18 +190,6 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
       <span className="font-mono text-xs font-semibold tracking-widest uppercase text-neutral-500 dark:text-neutral-400">
         {children}
       </span>
-    </div>
-  );
-}
-
-function RetroCard({ label, value }: { label: string; value: string }) {
-  const config = retroConfig[label] ?? { border: "border-t-neutral-400", label: "text-neutral-500", icon: "·" };
-  return (
-    <div className={`p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 border-t-2 ${config.border}`}>
-      <p className={`text-xs font-bold uppercase tracking-wide mb-2 ${config.label}`}>
-        {config.icon} {label}
-      </p>
-      <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">{value}</p>
     </div>
   );
 }

@@ -64,26 +64,6 @@ export const projects: Project[] = [
     problemSolving: [
       {
         issue:
-          "Running the DB on RDS for a personal project meant monthly costs rivaled the EC2 bill, making long-term operation unsustainable.",
-        analysis:
-          "RDS db.t3.micro alone was ~$15/month; add storage and backup costs and it approached the EC2 t3.medium cost (~$30). For a study platform with dozens of users, Multi-AZ failover and automatic backups felt like paying for insurance I'd never claim. I realized I could 'build just the level of reliability I actually need' and cut costs in half.",
-        solution:
-          "Removed RDS and switched to Docker PostgreSQL on EC2, and split the backup job into three Spring Batch Steps: pg_dump → S3 upload → local cleanup. The ordering matters: if the S3 upload fails but the next Step (local cleanup) runs anyway, the original file could end up nowhere — not in S3, not on disk. So a failed upload throws and stops the Job right there, before cleanup ever runs. The S3 bucket also carries a 30-day lifecycle policy, so backup storage is pruned automatically too.",
-        result:
-          "DB-related monthly costs dropped from ~$15 to effectively $0 — comfortably inside the S3 free tier (5GB). Accepting an RPO of 24 hours was a deliberate tradeoff matched to the service's actual requirements.",
-      },
-      {
-        issue:
-          "When error alert emails arrived at odd hours, manually reading stack traces and judging severity every time was draining.",
-        analysis:
-          "Forwarding raw logs was 'notification,' not 'analysis.' In a solo-operated project, manually triaging every error isn't sustainable. But handing that judgment to AI raised a new question — 'can I actually leave this running?' — and I didn't want the cost of automation to eat the benefit of it.",
-        solution:
-          "A custom Logback Appender catches only ERROR-level logs from the com.crossview package, excluding the alert service's own logs to prevent infinite loops. Caught errors are processed asynchronously with a hash-based 10-minute dedup cooldown, then sent to Bedrock Haiku with the last 50 log lines for root-cause analysis, severity assessment, and remediation suggestions — delivered via email and Slack. Thread pool capped at 3, context limited to 50 lines, so the cost stays bounded no matter how noisy things get.",
-        result:
-          "I can now judge 'do I need to look at this right now?' from the AI summary in the subject line alone. Early on, though, both real server bugs and client-side mistakes triggered alerts — after a few days of that noise, I tightened the filter so only genuine server errors page me.",
-      },
-      {
-        issue:
           "Re-reading the join logic, I realized a 6-person group could logically end up with 7 members.",
         analysis:
           "The flow was 'check capacity, then add the member' — and I had missed that another request can slip between those two steps. With one seat left, two simultaneous requests both see room and both insert. Duplicate joins are caught by the unique(user_id, group_id) constraint, but 'member count <= capacity' is not the kind of condition a database constraint can express, so the application has to guarantee it. Worse, the capacity check read the JPA collection size, and a collection loaded into the persistence context cannot see a member another transaction just inserted — it was the wrong basis for the decision to begin with. I wrote the reproduction test first: with a 2-person group that already had its owner, 10 concurrent join requests all succeeded.",
@@ -104,16 +84,6 @@ export const projects: Project[] = [
       },
       {
         issue:
-          "Production schema was managed by ddl-auto=update, which meant the code could not tell me what state the database was actually in.",
-        analysis:
-          "Hibernate reshaping tables on entity changes was convenient, but it leaves no history, nothing to roll back, and nothing to review. Column drops and type changes are not applied at all, so over time the schema the entities describe and the schema that exists quietly diverge. At the same time, introducing a migration tool against a database that already holds real data made me cautious: done carelessly, the first deploy tries to recreate existing tables and fails, or worse, touches data.",
-        solution:
-          "I first extracted the DDL Hibernate actually generates from the entities and made that the V1 baseline — starting from the real artifact rather than hand-writing something that could subtly differ from production. Then baseline-on-migrate makes a database that already has tables record V1 as applied without executing it, so production is untouched and only V2 (indexes) runs. Fresh databases (local, CI) execute V1 onward, keeping environments identical. Finally ddl-auto moved to validate, so a mismatch between entities and the real schema fails startup.",
-        result:
-          "I verified both paths against real PostgreSQL 16 before deploying. On an empty database V1 and V2 applied in order; on a database with the pre-existing schema, V1 was recorded as a baseline and only V2 ran, adding the 17 indexes. Both passed ddl-auto=validate. Schema changes are now SQL files reviewed in pull requests, and the current production state is traceable through Git history.",
-      },
-      {
-        issue:
           "An incident email at 3 AM was useless if I wasn't at my computer — I wanted to direct a fix from my phone, from code change through deploy confirmation, without being physically present.",
         analysis:
           "My first instinct — SSH plus a persistent tmux session — collided with this server's deploy pipeline (cd.yml), which keeps port 22 closed by default and only opens it to the GitHub Actions runner's IP for the duration of a deploy. Leaving SSH open around the clock for phone access would have broken that security model outright. There was also a structural trap: the deploy directory (/app/repo) gets overwritten by git reset --hard on every deploy, so if a server-resident AI edited files directly without pushing them, the next deploy would silently wipe the fix.",
@@ -123,14 +93,8 @@ export const projects: Project[] = [
           "The system got tested for real almost immediately: a 502 appeared right after resizing the instance. I initially suspected the resize, but the deploy history showed the previous deploy had already died on a failed health check before the resize even started — and on top of that, cd.yml's failure-log step was printing logs for the wrong container name (app-app-1 instead of the actual crossview-app), so the crash logs had never once been visible. Chasing the deploy history and the logging bug instead of trusting the obvious-looking cause led to the real one — t3.micro's CPU credit limits plus a health-check timeout — and only then did redeploys start succeeding again, with the remote-ops setup proving itself in production on day one.",
       },
     ],
-    retrospective: {
-      improvements:
-        "The first half of this project taught me how to balance operational cost against reliability — dropping RDS and designing AI cost controls both came from asking 'what is the right level for this service's scale?' In the second half my attention moved inward. With everything working, I re-read the code asking whether it would hold up under load, and that surfaced the capacity race condition, a member-count query pattern that repeated itself, and schema changes with no history. All of them were the kind that run fine today and break when conditions change — and none would ever show up in a feature test. So I made a rule of writing the reproduction test before the fix, and for the concurrency bug I deliberately reverted the fix afterward to confirm the test failed. That was when it clicked that a test passing matters less than whether it fails when the code is wrong.",
-      regrets:
-        "Monitoring is still skewed toward error alerting; performance metrics (response times, query latency) remain thin. I added Prometheus and Grafana, but the dashboards are mostly system-level, so the very problems I just fixed — N+1 patterns, lock waits — are not yet observable as metrics. I also validated the performance work only by query count, never by putting real load on the system to see how response times actually change. Pessimistic locking is a safe choice at this scale, but I have no data on how contention builds when requests pile onto a popular group.",
-      futureWork:
-        "Build k6 load-test scenarios to measure before/after in response time and throughput, and surface lock wait time and connection pool utilization on the Grafana dashboard. Automate backup recovery testing so the 24-hour RPO is verified rather than assumed. On the code side, I am considering extending domain events beyond notifications — replacing the current approach where a service deletes a group's child data in a fixed order with an event-driven one.",
-    },
+    retrospective:
+      "Essentially all of the code in this project was written by AI. So the question I carried through development wasn't how fast I could ship — it was what I would trust code I didn't write. The answer turned out to be tests. If I pinned down what had to hold before handing off the implementation, I could verify the behavior regardless of who wrote the code.\n\nSo I treated testing as a question of which layer verifies what, not how many tests I could write. Domain rules — anything decidable from collaborating objects alone — stayed in fast unit tests with mocks. Anything where infrastructure changes the outcome, like which queries the database actually issues or whether a lock actually engages, moved into integration tests against a real PostgreSQL. The criterion was simple: does the thing I'm trying to verify disappear the moment I swap in a mock? If it does, it doesn't belong in a unit test.\n\nConcurrency was exactly that case. I wrote the reproduction test first — 10 people joining a 2-person group simultaneously — watched all 10 succeed, and only then added the lock. After fixing it, I deliberately removed the lock again to confirm the test failed with expected 1, actual 10. That was when it clicked that a test passing matters less than whether it fails reliably when the code is wrong. Race conditions can't be reproduced with mocks at all, and an ordinary transactional test that rolls back at the end can't spin up concurrent transactions either, so those moved into integration tests with a real database and real threads. I handled the N+1 the same way: the assertion had to be 'the aggregate query stays at exactly one regardless of how many groups are on the page,' not a vague sense that things felt slow — otherwise nothing catches the regression.\n\nWhat became just as clear is that directing AI well required me to know the domain and the features precisely. That 'member count <= capacity' isn't a condition a database can enforce the way a unique constraint can, so the application has to guarantee it. That counting members one way works for a detail view — a single COUNT — but doing the same thing in a list view creates another N+1. That isn't the kind of knowledge a code generator hands you. I had to understand the problem to ask the right question, and I had to know what needed verifying to decide which layer a test belonged in. Domain understanding was the input to test design, and those tests were what made AI-written code trustworthy. The suite grew to 50 along the way, but what stayed with me was the ordering, not the count. The more I built with AI, the more domain understanding and test design turned out to matter.\n\nThe blind spots are just as real. Monitoring is skewed toward error alerting, so performance signals like response time and query latency are thin. I validated the performance work only by query count, never by putting real load on the system. Pessimistic locking is safe at this scale, but I have no data on how contention builds when requests pile onto a popular group. The gap between what I can say I fixed and what I actually measured still sits with me.",
     links: {
       github: "https://github.com/eomkyeongmun/my_own",
       demo: "https://crossview.duckdns.org",
@@ -151,9 +115,9 @@ export const projects: Project[] = [
     architecture: {
       diagram: "/images/rag_arch.svg",
       description:
-        "A query is embedded as dense+sparse via BGE-M3, retrieved via FAISS, scores combined at 0.7/0.3, reranked by a cross-encoder to the top 5 chunks, and passed as grounding to Ollama (qwen2.5:3b) for Korean answer generation. Documents are chunked and embedded offline with incremental indexing.",
+        "A query is embedded as dense+sparse via BGE-M3, retrieved via FAISS, scores combined at 0.7/0.3, reranked by a cross-encoder to the top 5 chunks, and passed as grounding to Ollama (qwen2.5:32b) for Korean answer generation. Documents are chunked and embedded offline with incremental indexing.",
       reasoning:
-        "I initially assumed dense search alone would suffice, but queries like 'What is threat M013-1?' returned irrelevant results — semantic embeddings can't distinguish meaningless identifier codes. So I switched to a hybrid approach, and BGE-M3 conveniently produces both dense and sparse vectors in a single encoding, keeping the pipeline simple. The cross-encoder dramatically improved relevance but was too slow to apply to all results, so I limited it to the top 20 — a tradeoff between accuracy and latency. For the LLM, GPT-4 would have been better, but TARA data is confidential and cannot leave the company network, so I accepted some quality loss and deployed Ollama locally.",
+        "I initially assumed dense search alone would suffice, but queries like 'What is threat M013-1?' returned irrelevant results — semantic embeddings can't distinguish meaningless identifier codes. So I switched to a hybrid approach, and BGE-M3 conveniently produces both dense and sparse vectors in a single encoding, keeping the pipeline simple. The cross-encoder dramatically improved relevance but was too slow to apply to all results, so I limited it to the top 20 — a tradeoff between accuracy and latency. For the LLM, GPT-4 would have been better, but TARA data is confidential and cannot leave the company network, so I accepted some quality loss and deployed Ollama locally. The GPU decided the model size: the ceiling for the L4's 24GB in a g6.2xlarge was qwen2.5:32b at Q4_K_M (~20GB), so anything larger was never on the table.",
     },
     techStack: [
       {
@@ -172,9 +136,9 @@ export const projects: Project[] = [
         reason: "First-stage retrieval ranking wasn't satisfactory. The cross-encoder evaluates query-chunk pairs together for much more accurate relevance, but it's too slow for all results — so I limited it to the top 20.",
       },
       {
-        name: "Ollama (qwen2.5:3b)",
+        name: "Ollama (qwen2.5:32b, g6.2xlarge)",
         role: "Korean answer generation",
-        reason: "GPT-4 produced better answers, but TARA data is confidential and can't be sent to external APIs. Among models that could run locally, qwen2.5 had decent Korean performance, and the 3b size balanced response speed with quality.",
+        reason: "GPT-4 gave better answers, but TARA data cannot leave the company network, so the field narrowed to models we could host ourselves — and qwen2.5 had the best Korean performance among them. The GPU decided the size: the NVIDIA L4 in a g6.2xlarge has 24GB of VRAM, and qwen2.5:32b at Q4_K_M lands around 20GB, effectively the ceiling for a single card. Dropping to 14b would have left more headroom, but the quality gap was visible when summarizing long security-standard passages, so I accepted the constraint that little VRAM remained for context. That is why reranking down to the top 5 chunks was a requirement rather than an optimization.",
       },
       {
         name: "FastAPI",
@@ -209,14 +173,8 @@ export const projects: Project[] = [
           "Event-loop blocking under concurrent queries disappeared, and tAIRA's TARA analysis continues uninterrupted even when RAG fails.",
       },
     ],
-    retrospective: {
-      improvements:
-        "Designed the entire RAG pipeline from scratch and learned that 'per-query-type branching' is more practical than a 'one-size-fits-all pipeline.'",
-      regrets:
-        "Without quantitative evaluation (recall@k, etc.), tuning relied on 'does the result look right?' — I could never be sure whether a change was actually an improvement or a regression.",
-      futureWork:
-        "Build an evaluation harness to quantify tuning and automate index rebuilds and deployment via GitOps.",
-    },
+    retrospective:
+      "The company is an automotive cybersecurity consultancy, not a software organization, so I built this system alone from scoping through deployment. Writing a RAG pipeline with no one to review the code and no one to argue the design with was the real constraint. I worked with AI as a pair programmer and filled the missing reviewer's seat with test code instead.\n\nI pinned down tests for how retrieval shifts when the chunk size changes, whether identifier queries actually route into the hybrid branch, and whether concurrent requests ever cross responses — and once implementation was handed off, I ran the tests first, every time. When nobody else is reading your code, what you have already verified is the only reason to trust it. What I regret is that the verification stopped at behavior. I never built retrieval-quality metrics like recall@k, so every parameter change still came down to a judgment call about whether it was an improvement or a regression.\n\nAt the same time, the limits of what AI could do for me were obvious. Why dense embeddings alone can't retrieve an identifier like M013-1, why the cross-encoder had to be capped at the top 20 rather than applied to everything — those calls were only available to me because I understood the problem. AI turned my decisions into code quickly; it never made the decisions. Building at this scale alone was possible because of AI, but what made it actually run was leaving a reason and a test behind every choice.",
     links: {},
   },
   {
@@ -290,14 +248,8 @@ export const projects: Project[] = [
           "Node join issues were resolved and Karpenter-based autoscaling operated stably.",
       },
     ],
-    retrospective: {
-      improvements:
-        "The biggest takeaway was validating a designed architecture against real load. Architecture on paper and architecture under traffic are different things — I experienced that firsthand.",
-      regrets:
-        "Didn't simulate resource specs thoroughly before load testing, which caused AWS cost overruns. Karpenter configuration wasn't fully integrated into the GitOps flow before the project ended.",
-      futureWork:
-        "Full GitOps automation including Karpenter, and a cost simulation process before load testing.",
-    },
+    retrospective:
+      "The biggest takeaway was validating a designed architecture against real load. Architecture on paper and architecture under traffic are different things, and I felt that difference firsthand.\n\nWhat stayed with me longer, though, was how to work with AI. Terraform modules, KEDA ScaledObjects, Karpenter NodePools — drafting all of it went noticeably faster with AI. But what got faster was implementation, not judgment. If I couldn't explain why KEDA instead of HPA, or Karpenter instead of Cluster Autoscaler, the generated config was just YAML that happened to run. I once set scaling values without properly reasoning through the policy and blew past the AWS budget during load testing. That wasn't the tool's failure; it was mine for directing it without criteria.\n\nSo I reversed the order: settle why this technology first, then bring AI in for the stretch that turns the decision into code. The same tool behaved completely differently after that. It stopped being 'something I could only manage because AI existed' and became 'more configurations I could validate in the same amount of time.' The clearer my reasons for a technology choice, the more AI was worth — that was this project's conclusion. Not getting Karpenter fully into the GitOps flow before the project wrapped still sits with me as unfinished.",
     links: {
       velog:
         "https://velog.io/@eomkyeongmun/series/CJ-%EC%98%AC%EB%A6%AC%EB%B8%8C%EB%84%A4%ED%8A%B8%EC%9B%8D%EC%8A%A4-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8",
@@ -310,7 +262,7 @@ export const projects: Project[] = [
     thumbnail: "/images/real.png",
     overview: {
       description:
-        "Tired of manually creating portfolio PDFs every time someone asked, I decided to build a site that serves the portfolio on the web and auto-generates PDFs. Since I was building it anyway, I set a goal of handling everything solo — frontend to infrastructure to CI/CD.",
+        "Every request for a portfolio PDF meant reworking a document by hand, so for the convenience of everyone involved I decided to build a site that serves the portfolio on the web and auto-generates the PDF. Since I was building it anyway, I set a goal of handling everything solo — frontend to infrastructure to CI/CD.",
       role: "Solely responsible for the full stack: Next.js frontend, Puppeteer PDF generation, feedback notification system, Terraform IaC, and GitHub Actions CI/CD. My personal bar was 'one push deploys everything.'",
     },
     architecture: {
@@ -321,11 +273,6 @@ export const projects: Project[] = [
         "Running a Next.js server on EC2 would have been simplest, but a portfolio site has almost no traffic — paying for an always-on server felt wasteful. I made static pages nearly free with S3+CloudFront and isolated only heavy, infrequent work (PDF generation) into Lambda. For the feedback system, I initially had the receiver Lambda send emails directly, but realized that adding Slack or DB storage later would mean modifying the Lambda every time. Decoupling via EventBridge means I can add new consumers just by adding Rules.",
     },
     techStack: [
-      {
-        name: "Next.js 16 / React / TypeScript",
-        role: "Web pages and PDF rendering page",
-        reason: "I considered Gatsby, but App Router's SSG was a perfect fit for S3 deployment. TypeScript catches data structure changes at compile time, which matters when portfolio data evolves frequently.",
-      },
       {
         name: "AWS S3 + CloudFront + OAC",
         role: "Static file storage / global CDN",
@@ -377,14 +324,8 @@ export const projects: Project[] = [
           "Routing issue resolved. Hashed assets still benefit from long-term caching.",
       },
     ],
-    retrospective: {
-      improvements:
-        "Building everything from frontend to serverless backend, IaC, and CI/CD solo was the biggest learning experience. Adding WAF, X-Ray, and CloudWatch alarms taught me the real difference between 'working' and 'operable.'",
-      regrets:
-        "Lambda cold start on the first PDF request still takes ~10 seconds and remains unresolved. Terraform modules grew complex and need refactoring.",
-      futureWork:
-        "Reduce cold start with Provisioned Concurrency and extend the feedback system to Slack and DB via EventBridge Rules.",
-    },
+    retrospective:
+      "What stayed with me most is how completely different 'working' and 'operable' turn out to be. Getting the static site onto S3 and rendering was quick; the WAF, X-Ray, and CloudWatch alarms I added afterward took far longer. Not a single feature came out of that work, and I kept wondering why I was still on it — until an alarm told me a deploy had broken before any visitor noticed. Observability and defense aren't nice-to-haves; they're closer to the precondition for operating anything at all.\n\nTerraform started as one file holding everything. As resources piled up I lost track of what changed when I touched one thing, and only then did I split it into role-based modules — acm, s3, cloudfront, lambda, waf. Would it have been better to structure it that way from the start? I don't think so. I could only explain my own criteria for splitting modules after living through a file that had outgrown itself.\n\nThe one thing still nagging at me is Lambda cold start. The first PDF request takes close to 10 seconds, and I know Provisioned Concurrency would fix it. But do I pay a standing cost on a site with almost no traffic, or let the occasional first visitor wait 10 seconds? I haven't settled that with myself yet. This smallest of my projects was where I first ran into cost and user experience colliding head-on with no clean answer.",
     links: {
       github: "https://github.com/eomkyeongmun/my-portfolio",
       velog: "https://velog.io/@eomkyeongmun/series/project",
