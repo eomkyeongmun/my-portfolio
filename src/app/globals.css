@@ -25,6 +25,8 @@ body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   word-break: keep-all;
   overflow-wrap: break-word;
+  /* 마지막 줄에 한 단어만 남는 것을 줄이고 줄 길이를 고르게 배분 */
+  text-wrap: pretty;
 }
 
 /* ── Print styles ─────────────────────────────────────── */
