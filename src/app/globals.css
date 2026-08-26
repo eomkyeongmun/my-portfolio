@@ -23,10 +23,27 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-  word-break: keep-all;
+  /* 양쪽 정렬을 쓰므로 한글은 음절 단위로 줄바꿈을 허용한다.
+     keep-all이면 어절이 통째로 넘어가 단어 사이 간격이 크게 벌어진다.
+     영문 단어는 normal에서도 중간에 쪼개지지 않는다. */
+  word-break: normal;
   overflow-wrap: break-word;
+}
+
+/* ── 본문 문단 양쪽 정렬 ──────────────────────────────── */
+/* 제목·버튼·배지는 제외하고 실제 읽는 문단에만 적용한다. */
+p,
+dd {
+  text-align: justify;
   /* 마지막 줄에 한 단어만 남는 것을 줄이고 줄 길이를 고르게 배분 */
   text-wrap: pretty;
+}
+
+/* 짧은 라벨·메타 텍스트는 양쪽 정렬이 오히려 어색해 좌측 정렬 유지 */
+p.text-xs,
+p.text-\[11px\],
+p.font-mono {
+  text-align: left;
 }
 
 /* ── Print styles ─────────────────────────────────────── */
