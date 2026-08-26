@@ -6,6 +6,7 @@ import { useState, useRef, useCallback } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { projects as koProjects } from "@/data/projects";
 import { projects as enProjects } from "@/data/en/projects";
+import { PdfDownloadButton } from "@/components/PdfDownloadButton";
 
 export function Header() {
   const { theme, toggle } = useTheme();
@@ -161,17 +162,32 @@ export function Header() {
                   </>
                 )}
                 {projects.map((p) => (
-                  <Link
-                    key={p.category}
-                    href={printHref(p.category)}
-                    target="_blank"
-                    role="menuitem"
-                    className="block px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-900 dark:focus-visible:outline-neutral-100"
-                    onClick={closeDropdown}
-                  >
-                    {p.title}
-                  </Link>
+                  <div key={p.category} className="flex items-center hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                    <Link
+                      href={printHref(p.category)}
+                      target="_blank"
+                      role="menuitem"
+                      className="flex-1 min-w-0 truncate pl-4 pr-2 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-900 dark:focus-visible:outline-neutral-100"
+                      onClick={closeDropdown}
+                    >
+                      {p.title}
+                    </Link>
+                    <span className="pr-2">
+                      <PdfDownloadButton
+                        slug={p.category}
+                        projectTitle={p.title}
+                        variant="icon"
+                        lang={isEn ? "en" : "ko"}
+                      />
+                    </span>
+                  </div>
                 ))}
+                <div className="border-t border-neutral-100 dark:border-neutral-800" />
+                <p className="px-4 py-2 text-[11px] leading-snug text-neutral-400 dark:text-neutral-500">
+                  {isEn
+                    ? "Title opens the print view · ⤓ generates the PDF on the server"
+                    : "제목은 인쇄용 화면 · ⤓는 서버에서 PDF 생성"}
+                </p>
               </div>
             )}
           </div>
