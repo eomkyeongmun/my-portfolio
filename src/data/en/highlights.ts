@@ -17,14 +17,14 @@ export interface HighlightEn {
 
 export const highlights: HighlightEn[] = [
   {
-    title: "Multi-Layer EKS Autoscaling for 2,000 RPS",
+    title: "Multi-Layer EKS Autoscaling for 1,700 RPS",
     category: "Traffic",
     problem:
       "CPU-based HPA was too slow to reflect traffic spikes, causing unready Pods to receive requests and repeated Pending states.",
     action:
       "Separated startup/readiness/liveness probes and aligned ALB health check paths to block unready Pods. Supplemented with KEDA pre-scaling and Karpenter for a multi-layer autoscaling architecture.",
     result:
-      "Sustained 2,000 RPS for 60 seconds and handled 120,000 total requests in QA — validating the multi-layer autoscaling design.",
+      "Sustained 1,700 RPS for 60 seconds and handled 100,000 total requests in QA — validating the multi-layer autoscaling design.",
   },
   {
     title: "Centralized NAT via Central VPC & Transit Gateway",

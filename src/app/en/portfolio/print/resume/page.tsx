@@ -32,7 +32,7 @@ const projectBullets: Record<string, string[]> = {
   ],
   infrastructure: [
     "Architected EKS-based platform with multi-layer autoscaling: KEDA (request-based) + Karpenter (node-level)",
-    "Validated 2,000 RPS / 120,000 requests with zero downtime in QA environment",
+    "Validated 1,700 RPS / 100,000 requests with zero downtime in QA environment",
     "Centralized GitLab, monitoring, and DNS security observability via Central VPC + Transit Gateway",
     "Applied GitOps (ArgoCD) and IRSA for consistent deployment state and least-privilege security",
   ],

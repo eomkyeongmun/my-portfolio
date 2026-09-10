@@ -56,7 +56,7 @@ PROJECTS = [
     {
         "title": "EKS · Central VPC Infrastructure",
         "period": "Feb 2026 - Mar 2026",
-        "summary": "EKS-based platform with Central VPC observability hub. Validated 2,000 RPS / 120K requests in QA.",
+        "summary": "EKS-based platform with Central VPC observability hub. Validated 1,700 RPS / 100K requests in QA.",
     },
     {
         "title": "Personal Portfolio Website",

@@ -21,7 +21,7 @@ PROJECTS = [
         "diagram": "public/images/aws_cj_infra.png",
         "summary": (
             "Designed and built an EKS-based application platform and a Central VPC observability hub. "
-            "Validated the architecture under 2,000 RPS / 120K requests in QA."
+            "Validated the architecture under 1,700 RPS / 100K requests in QA."
         ),
         "highlights": [
             "Five environments (Prod / QA / Dev / DR / Central VPC) with clear boundaries",
@@ -37,7 +37,7 @@ PROJECTS = [
             "CPU-based HPA couldn't keep up with traffic spikes, causing unready Pods and Pending nodes. "
             "Separated probes, unified ALB health checks, and combined KEDA + 45 pre-scaled Pods + Karpenter into a layered scaling design."
         ),
-        "result": "Sustained 2,000 RPS for 60s in QA, processing 120,000 requests with zero downtime.",
+        "result": "Sustained 1,700 RPS for 60s in QA, processing 100,000 requests with zero downtime.",
         "link": "velog.io/@eomkyeongmun/series/CJ-Olive-Networks-Project",
     },
     {

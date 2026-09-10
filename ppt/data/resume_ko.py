@@ -60,7 +60,7 @@ PROJECTS = [
     {
         "title": "EKS · Central VPC 인프라",
         "period": "2026.02 - 2026.03",
-        "summary": "EKS 기반 플랫폼 + Central VPC 중앙 관제 구조 설계. QA에서 2,000 RPS · 12만 요청 처리 검증.",
+        "summary": "EKS 기반 플랫폼 + Central VPC 중앙 관제 구조 설계. QA에서 1,700 RPS · 10만 요청 처리 검증.",
     },
     {
         "title": "개인 포트폴리오 사이트 구축",

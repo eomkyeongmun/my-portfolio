@@ -17,11 +17,11 @@ export interface Highlight {
 
 export const highlights: Highlight[] = [
   {
-    title: "EKS 다층 오토스케일링으로 2,000 RPS 대응",
+    title: "EKS 다층 오토스케일링으로 1,700 RPS 대응",
     category: "트래픽",
     problem: "CPU 기반 HPA는 요청 급증 반영이 늦어 미준비 Pod 유입과 Pending이 반복됐습니다.",
     action: "Probe 분리와 ALB 헬스체크 통일로 미준비 Pod를 차단하고, KEDA·선기동·Karpenter로 확장 구조를 보완했습니다.",
-    result: "QA에서 2,000 RPS를 60초간 안정적으로 유지했고, 총 120,000건 처리로 다층 오토스케일링 구조를 검증했습니다.",
+    result: "QA에서 1,700 RPS를 60초간 안정적으로 유지했고, 총 100,000건 처리로 다층 오토스케일링 구조를 검증했습니다.",
   },
   {
     title: "분산 NAT → Central VPC · TGW 중앙화",

@@ -57,7 +57,7 @@ export const skills: SkillCategory[] = [
       {
         name: "AWS EKS",
         description:
-          "Validated 2,000 RPS / 120K requests with zero downtime using KEDA + Karpenter autoscaling",
+          "Validated 1,700 RPS / 100K requests with zero downtime using KEDA + Karpenter autoscaling",
         level: 3,
       },
       {

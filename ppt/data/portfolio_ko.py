@@ -21,7 +21,7 @@ PROJECTS = [
         "diagram": "public/images/aws_cj_infra.png",
         "summary": (
             "EKS 기반 애플리케이션 플랫폼과 Central VPC 중앙 관제 네트워크를 설계·구축. "
-            "QA 환경에서 2,000 RPS · 12만 요청을 처리하며 구조의 유효성을 검증했습니다."
+            "QA 환경에서 1,700 RPS · 10만 요청을 처리하며 구조의 유효성을 검증했습니다."
         ),
         "highlights": [
             "Prod / QA / Dev / DR / Central VPC 5개 환경 분리 설계",
@@ -37,7 +37,7 @@ PROJECTS = [
             "CPU 기반 HPA는 요청 급증을 반영하지 못해 미준비 Pod 유입과 Pending이 반복. "
             "Probe 분리·ALB 헬스체크 통일과 KEDA·선기동 45 Pod·Karpenter를 결합해 다층 확장 구조를 설계했습니다."
         ),
-        "result": "QA에서 2,000 RPS를 60초 동안 유지, 총 120,000 요청을 무중단 처리.",
+        "result": "QA에서 1,700 RPS를 60초 동안 유지, 총 100,000 요청을 무중단 처리.",
         "link": "velog.io/@eomkyeongmun/series/CJ-올리브네트웍스-프로젝트",
     },
     {

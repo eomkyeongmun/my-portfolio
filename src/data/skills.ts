@@ -66,7 +66,7 @@ export const skills: SkillCategory[] = [
       {
         name: "AWS EKS",
         description:
-          "KEDA·Karpenter 오토스케일링으로 2,000 RPS·12만 요청 무중단 처리 검증",
+          "KEDA·Karpenter 오토스케일링으로 1,700 RPS·10만 요청 무중단 처리 검증",
         level: 3,
       },
       {

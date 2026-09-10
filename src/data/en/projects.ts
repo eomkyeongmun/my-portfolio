@@ -183,7 +183,7 @@ export const projects: Project[] = [
     period: "Feb 2026 – Mar 2026",
     overview: {
       description:
-        "Started from the desire to design a Kubernetes platform that could actually handle production-level traffic. Built an EKS-based application platform and Central VPC centralized operations network, then validated the architecture with 2,000 RPS and 120K total requests in QA.",
+        "Started from the desire to design a Kubernetes platform that could actually handle production-level traffic. Built an EKS-based application platform and Central VPC centralized operations network, then validated the architecture with 1,700 RPS and 100K total requests in QA.",
       role: "As team lead, coordinated the schedule and direction while driving the EKS-centric architecture design. My focus was on predicting 'where will it break first under load?' and preparing for it proactively.",
     },
     architecture: {
@@ -235,7 +235,7 @@ export const projects: Project[] = [
         solution:
           "Separated startup/readiness/liveness probes to block traffic before boot completes. Switched to KEDA with average RPS per Pod scaling, pre-scaled 45 Pods for initial load absorption, and added Karpenter for automatic node provisioning on Pending — aligning Pod and node scaling timing.",
         result:
-          "Sustained ~2,000 RPS for 60 seconds in QA, processing 120,000 requests with zero downtime.",
+          "Sustained ~1,700 RPS for 60 seconds in QA, processing 100,000 requests with zero downtime.",
       },
       {
         issue:
