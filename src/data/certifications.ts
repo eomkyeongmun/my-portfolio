@@ -30,4 +30,10 @@ export const certifications: Certification[] = [
     date: "2026.03",
     certNumber: "", // TODO: 자격증 번호 입력
   },
+  {
+    name: "HashiCorp Certified: Terraform Associate (004)",
+    issuer: "HashiCorp",
+    date: "2026.09",
+    certNumber: "", // TODO: 자격증 번호 입력
+  },
 ];

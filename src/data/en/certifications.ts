@@ -25,4 +25,10 @@ export const certifications: Certification[] = [
     date: "Mar 2026",
     certNumber: "",
   },
+  {
+    name: "HashiCorp Certified: Terraform Associate (004)",
+    issuer: "HashiCorp",
+    date: "Sep 2026",
+    certNumber: "",
+  },
 ];
