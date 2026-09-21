@@ -180,7 +180,7 @@ export const projects: Project[] = [
   {
     category: "infrastructure",
     title: "EKS · Central VPC Infrastructure",
-    period: "Dec 2025 – Feb 2026",
+    period: "Feb 2026",
     overview: {
       description:
         "Started from the desire to design a Kubernetes platform that could actually handle production-level traffic. Built an EKS-based application platform and Central VPC centralized operations network, then validated the architecture with 1,700 RPS and 100K total requests in QA.",

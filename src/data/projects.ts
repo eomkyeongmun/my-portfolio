@@ -217,7 +217,7 @@ export const projects: Project[] = [
   {
     category: "infrastructure",
     title: "EKS · Central VPC 인프라",
-    period: "2025.12 ~ 2026.02",
+    period: "2026.02",
     overview: {
       description:
         "실제 서비스급 트래픽을 감당하는 쿠버네티스 플랫폼을 설계하고 싶어 시작한 프로젝트입니다. EKS 기반 애플리케이션 플랫폼과 Central VPC 중앙 관제 네트워크를 구축하고, QA 환경에서 1,700 RPS · 10만 요청으로 구조의 유효성을 직접 검증했습니다.",
