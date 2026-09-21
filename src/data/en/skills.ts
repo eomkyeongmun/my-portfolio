@@ -46,7 +46,7 @@ export const skills: SkillCategory[] = [
       {
         name: "Ollama / LLM",
         description:
-          "In-house local LLM serving for Korean answers without sending sensitive data externally",
+          "Local LLM serving for Korean answers, with the generation model and the evaluation judge kept separate for scoring integrity",
         level: 2,
       },
     ],
@@ -109,7 +109,7 @@ export const skills: SkillCategory[] = [
       {
         name: "Prometheus / Grafana",
         description:
-          "Metrics collection and visualization dashboards; used as KEDA scaling decision inputs",
+          "Defined per-Pod request-rate metrics and wired them into KEDA as the scaling decision input",
         level: 2,
       },
       {
@@ -119,9 +119,9 @@ export const skills: SkillCategory[] = [
         level: 2,
       },
       {
-        name: "OpenTelemetry / X-Ray",
+        name: "AWS X-Ray",
         description:
-          "Distributed tracing for inter-service latency bottleneck analysis and request flow visibility",
+          "Enabled tracing across API Gateway and Lambda to surface request flow and latency segments",
         level: 2,
       },
     ],

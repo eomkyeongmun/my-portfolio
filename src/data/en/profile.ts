@@ -24,20 +24,26 @@ export const profile: Profile = {
     {
       company: "Rock Korea (Intern)",
       role: "Software Engineer Intern",
-      period: "Mar 2026 – Aug 2026",
+      period: "Mar 2026 – Jun 2026",
       description: [
         "Developed an LLM- and RAG-based automotive cybersecurity Q&A automation tool.",
-        "Built AI-native CI/CD error handling — GitHub Actions captures build/test failure logs, summarizes root cause via LLM, and sends actionable fix guidance to Slack in real time.",
-        "Authored a research paper on SDV OTA security for the Korean Society of Automotive Engineers (KSAE).",
-        "Gained practical experience in connecting AI-based systems with real engineering workflows.",
+        "Built a retrieval evaluation set from real analyst questions, broke failures down by query type, and verified each fix against before/after metrics.",
+        "Co-first author of a research paper on SDV OTA security for the Korean Society of Automotive Engineers (KSAE).",
       ],
       paper: {
         title:
-          "Race Conditions and a Hierarchical Safe-Transition Protocol in SDV OTA Wave Switching",
+          "Race Conditions and Safe Transition Protocol in SDV OTA Wave Switching",
         summary:
           "Quantified the race conditions and security holes that arise during wave switching of a Kubernetes + Istio OTA backend (auth→campaign→package→deploy), and designed and validated a Hierarchical Safe-Transition Protocol (HSTP) to eliminate them. Deactivation order alone shifted the security hole from ~52s to 0s, and HSTP + microsegmentation achieved a 99.1% lateral-movement blocking rate and an 85.6% request success rate.",
-        keywords: ["SDV / OTA", "Kubernetes", "Istio", "Zero Trust", "mTLS"],
+        keywords: [
+          "SDV / OTA",
+          "Kubernetes",
+          "Istio",
+          "Microsegmentation",
+          "NetworkPolicy",
+        ],
         pdf: "/images/sdv_ota_paper.pdf",
+        github: "https://github.com/eomkyeongmun/sdv-ota-wave-research",
       },
     },
   ],

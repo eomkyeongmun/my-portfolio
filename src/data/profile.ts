@@ -83,18 +83,24 @@ export const profile: Profile = {
     {
       company: "Rock Korea (Intern)",
       role: "",
-      period: "2026.03 - 2026.08",
+      period: "2026.03 - 2026.06",
       description: [
         "LLM·RAG 기반 자동차 사이버보안 Q&A 자동화 툴 개발",
-        "GitHub Actions CI/CD 파이프라인에 AI 에러 분석 연동 — 빌드·테스트 실패 시 로그를 LLM으로 요약·원인 분석해 Slack으로 즉시 알림 및 해결 가이드 제공",
-        "SDV OTA 보안 관련 자동차공학회 논문 작성",
+        "실제 업무 질문으로 검색 평가셋을 직접 구축하고, 실패 유형을 분해해 개선 전후를 지표로 검증",
+        "SDV OTA 보안 관련 자동차공학회 논문 작성 (공동 제1저자)",
       ],
       paper: {
         title:
-          "SDV OTA 웨이브 전환에서의 레이스 컨디션과 계층적 안전 전환 프로토콜",
+          "SDV OTA 백엔드 웨이브 전환 경쟁 조건과 계층적 안전 전환 프로토콜",
         summary:
           "Kubernetes + Istio 기반 OTA 백엔드(auth→campaign→package→deploy)의 웨이브 전환 구간에서 발생하는 레이스 컨디션과 보안 홀을 정량화하고, 이를 차단하는 계층적 안전 전환 프로토콜(HSTP)을 설계·검증했습니다. 비활성화 순서만으로 보안 홀이 약 52초에서 0초로 갈렸고, HSTP + 마이크로세그멘테이션 적용 시 Lateral Movement 차단율 99.1%, 요청 성공률 85.6%를 달성했습니다.",
-        keywords: ["SDV / OTA", "Kubernetes", "Istio", "Zero Trust", "mTLS"],
+        keywords: [
+          "SDV / OTA",
+          "Kubernetes",
+          "Istio",
+          "마이크로세그멘테이션",
+          "NetworkPolicy",
+        ],
         pdf: "/images/sdv_ota_paper.pdf",
         github: "https://github.com/eomkyeongmun/sdv-ota-wave-research",
       },

@@ -15,7 +15,7 @@ export const projects: Project[] = [
       description:
         "Spring Boot, PostgreSQL, Redis, and Next.js run together via Docker Compose on a single EC2 instance. DB backups are automated with Spring Batch: pg_dump → S3 upload → local cleanup, running daily at 3 AM. When an error occurs, a custom Logback Appender catches it, sends it to Bedrock Claude Haiku for root-cause analysis, and delivers the result via email and Slack. More recently I added a remote-ops layer: Claude Code runs resident inside the server under tmux+systemd, reachable from my phone over outbound-only remote-control, so an incident alert lets me direct a fix — code change → git push → confirm the existing CD pipeline deploys it — from wherever I am.",
       reasoning:
-        "My first instinct was to use RDS — it's the obvious choice. But when I priced it out, even a db.t3.micro came to ~$15/month, and with storage and backup costs on top, it rivaled the EC2 bill itself. I asked myself: 'Does this service actually need RDS-level availability?' Honestly, for a study platform with a few dozen users, Multi-AZ failover was overkill. So I put PostgreSQL in Docker on EC2 and covered the data loss risk with daily S3 backups. An RPO of 24 hours means 'worst case, I lose one day of data' — and for this service, that's an acceptable tradeoff. For error alerting, I originally planned to just collect logs and email them. But after waking up to error emails at 3 AM and having to judge 'is this urgent or not?' every single time, it got exhausting. So I plugged in Bedrock Claude — but to keep costs predictable, I chose the cheapest Haiku model, capped context at 50 recent log lines, and added a 10-minute dedup cooldown for identical errors. The principle was: 'use AI, but never let the cost become unpredictable.'",
+        "My first instinct was to use RDS — it's the obvious choice. But even the smallest instance, once storage and backup costs were added on top, rivaled the EC2 bill itself. I asked myself: 'Does this service actually need RDS-level availability?' Honestly, for a study platform with a few dozen users, Multi-AZ failover was overkill. So I put PostgreSQL in Docker on EC2 and covered the data loss risk with daily S3 backups. An RPO of 24 hours means 'worst case, I lose one day of data' — and for this service, that's an acceptable tradeoff. For error alerting, I originally planned to just collect logs and email them. But after waking up to error emails at 3 AM and having to judge 'is this urgent or not?' every single time, it got exhausting. So I plugged in Bedrock Claude — but to keep costs predictable, I chose the cheapest Haiku model, capped context at 50 recent log lines, and added a 10-minute dedup cooldown for identical errors. The principle was: 'use AI, but never let the cost become unpredictable.'",
     },
     techStack: [
       {
@@ -28,7 +28,7 @@ export const projects: Project[] = [
         name: "Docker Compose + PostgreSQL",
         role: "Application runtime + data storage",
         reason:
-          "RDS would have been convenient, but its monthly cost nearly matched the EC2 bill. When I honestly evaluated whether a personal project needs managed DB features like automatic backups and failover, the answer was no — Docker PostgreSQL plus S3 backups was sufficient. More operational overhead, but less than half the cost.",
+          "RDS would have been convenient, but its monthly cost nearly matched the EC2 bill. When I honestly evaluated whether a personal project needs managed DB features like automatic backups and failover, the answer was no — Docker PostgreSQL plus S3 backups was sufficient. More operational overhead, but the standing cost stays fixed at a single EC2 instance.",
       },
       {
         name: "Spring Batch + S3",
@@ -88,7 +88,7 @@ export const projects: Project[] = [
         analysis:
           "My first instinct — SSH plus a persistent tmux session — collided with this server's deploy pipeline (cd.yml), which keeps port 22 closed by default and only opens it to the GitHub Actions runner's IP for the duration of a deploy. Leaving SSH open around the clock for phone access would have broken that security model outright. There was also a structural trap: the deploy directory (/app/repo) gets overwritten by git reset --hard on every deploy, so if a server-resident AI edited files directly without pushing them, the next deploy would silently wipe the fix.",
         solution:
-          "I switched to Claude Code's /remote-control feature. Unlike SSH, where the client connects inbound to the server, the server-side Claude Code process keeps an outbound connection to Anthropic open, and the phone connects the same way and gets relayed through — no inbound port ever opens. I withheld deploy rights from it: it can commit and git push, nothing further, so the fix flows through the already-verified CD pipeline's build, health check, and rollback safeguards instead of a new, unproven path. tmux plus systemd means the session survives a server reboot automatically, and ~/.claude/settings.json splits permissions into allow (git operations, read-only checks), ask (deletion, sudo, service restarts), and deny (destructive commands) so the auto-approved scope stays bounded even when I'm not watching closely. When I lost the SSH private key partway through setup and couldn't reach the server at all, I didn't cut a new backdoor — I reused the SSH secrets the CD pipeline already held, via a workflow_dispatch workflow, to build an install/diagnose channel instead.",
+          "I switched to Claude Code's /remote-control feature. Unlike SSH, where the client connects inbound to the server, the server-side Claude Code process keeps an outbound connection to Anthropic open, and the phone connects the same way and gets relayed through — no inbound port ever opens. I withheld deploy rights from it: it can commit and git push, nothing further, so the fix flows through the already-verified CD pipeline's build, health check, and rollback safeguards instead of a new, unproven path. tmux plus systemd means the session survives a server reboot automatically, and ~/.claude/settings.json splits permissions into allow (git operations, read-only checks), ask (deletion, sudo, service restarts), and deny (destructive commands) so the auto-approved scope stays bounded even when I'm not watching closely. The install and diagnostic channel followed the same rule: rather than opening a new path, I reused the secrets the CD pipeline already held via a workflow_dispatch workflow.",
         result:
           "The system got tested for real almost immediately: a 502 appeared right after resizing the instance. I initially suspected the resize, but the deploy history showed the previous deploy had already died on a failed health check before the resize even started — and on top of that, cd.yml's failure-log step was printing logs for the wrong container name (app-app-1 instead of the actual crossview-app), so the crash logs had never once been visible. Chasing the deploy history and the logging bug instead of trusting the obvious-looking cause led to the real one — t3.micro's CPU credit limits plus a health-check timeout — and only then did redeploys start succeeding again, with the remote-ops setup proving itself in production on day one.",
       },
@@ -108,16 +108,16 @@ export const projects: Project[] = [
     confidential: true,
     overview: {
       description:
-        "Built to eliminate the inefficiency of cybersecurity engineers manually searching through ISO/SAE 21434, UN R155, and internal TARA tables for every query. The TARA automation tool (tAIRA) calls this system at each analysis step to pull in grounding context.",
+        "Built to eliminate the inefficiency of cybersecurity engineers manually searching through ISO/SAE 21434, UN R155, and internal TARA tables for every query. I structured it so the TARA automation tool (tAIRA) calls this system at each analysis step to pull in grounding context.",
       role:
-        "Solely designed and implemented the entire RAG pipeline — from embedding model selection to retrieval strategy, LLM answer generation, and API integration. The core challenge was finding the best architecture under two constraints: 'identifiers must be found exactly' and 'sensitive data must never leave the company network.'",
+        "Solely designed and implemented the entire RAG pipeline — from embedding model selection to retrieval strategy, LLM answer generation, and API integration. The core of the work was refusing to stop at 'it seems to work': I built an evaluation set from real analyst questions and narrowed down which query types were failing, and why, using metrics.",
     },
     architecture: {
       diagram: "/images/rag_arch.svg",
       description:
-        "A query is embedded as dense+sparse via BGE-M3, retrieved via FAISS, scores combined at 0.7/0.3, reranked by a cross-encoder to the top 5 chunks, and passed as grounding to Ollama (qwen2.5:32b) for Korean answer generation. Documents are chunked and embedded offline with incremental indexing.",
+        "A query is embedded as dense+sparse via BGE-M3, retrieved via FAISS, scores combined at 0.7/0.3, reranked by a cross-encoder, and the top 5 chunks are passed as grounding to Ollama for Korean answer generation. The index covers ISO/SAE 21434, UN R155, and TARA tables chunked at 1,200 characters with 150 overlap — 1,680 chunks total — embedded offline with incremental indexing.",
       reasoning:
-        "I initially assumed dense search alone would suffice, but queries like 'What is threat M013-1?' returned irrelevant results — semantic embeddings can't distinguish meaningless identifier codes. So I switched to a hybrid approach, and BGE-M3 conveniently produces both dense and sparse vectors in a single encoding, keeping the pipeline simple. The cross-encoder dramatically improved relevance but was too slow to apply to all results, so I limited it to the top 20 — a tradeoff between accuracy and latency. For the LLM, GPT-4 would have been better, but TARA data is confidential and cannot leave the company network, so I accepted some quality loss and deployed Ollama locally. The GPU decided the model size: the ceiling for the L4's 24GB in a g6.2xlarge was qwen2.5:32b at Q4_K_M (~20GB), so anything larger was never on the table.",
+        "I initially assumed dense search alone would suffice, but queries like 'What is threat M013-1?' returned irrelevant results — semantic embeddings can't distinguish meaningless identifier codes. So I switched to a hybrid approach, and BGE-M3 conveniently produces both dense and sparse vectors in a single encoding, keeping the pipeline simple. The cross-encoder dramatically improved relevance but was too slow to apply to everything, so I limited it to the top 20 hybrid candidates — a tradeoff between accuracy and latency. I also refused to trust the reranker alone for the final ordering, blending it as 0.7×rerank + 0.3×hybrid so the first-stage signal survives. The generation model runs locally via Ollama, and the judge model that scores answer quality is deliberately a different model from the generator.",
     },
     techStack: [
       {
@@ -128,7 +128,7 @@ export const projects: Project[] = [
       {
         name: "FAISS",
         role: "Vector index / candidate retrieval",
-        reason: "I considered Milvus and Weaviate, but with only a few thousand documents, spinning up a dedicated vector DB server felt excessive. File-based FAISS was sufficient and simpler to deploy.",
+        reason: "I considered Milvus and Weaviate, but at an index size of 1,680 chunks, spinning up a dedicated vector DB server felt excessive. File-based FAISS was sufficient and simpler to deploy.",
       },
       {
         name: "Cross-Encoder Reranker",
@@ -136,9 +136,9 @@ export const projects: Project[] = [
         reason: "First-stage retrieval ranking wasn't satisfactory. The cross-encoder evaluates query-chunk pairs together for much more accurate relevance, but it's too slow for all results — so I limited it to the top 20.",
       },
       {
-        name: "Ollama (qwen2.5:32b, g6.2xlarge)",
-        role: "Korean answer generation",
-        reason: "GPT-4 gave better answers, but TARA data cannot leave the company network, so the field narrowed to models we could host ourselves — and qwen2.5 had the best Korean performance among them. The GPU decided the size: the NVIDIA L4 in a g6.2xlarge has 24GB of VRAM, and qwen2.5:32b at Q4_K_M lands around 20GB, effectively the ceiling for a single card. Dropping to 14b would have left more headroom, but the quality gap was visible when summarizing long security-standard passages, so I accepted the constraint that little VRAM remained for context. That is why reranking down to the top 5 chunks was a requirement rather than an optimization.",
+        name: "Ollama (qwen2.5)",
+        role: "Korean answer generation / evaluation judge",
+        reason: "I picked the qwen2.5 family on Korean answer quality and ran it locally. Generation stays on a lightweight 3b model while only the judge that scores answers runs at 32b — if the generator grades its own output, the scores drift generous and you can no longer tell an improvement from a regression. Keeping generation small meant the grounding had to carry the quality, which is why reranking down to the top 5 chunks was a premise rather than an optimization.",
       },
       {
         name: "FastAPI",
@@ -148,19 +148,19 @@ export const projects: Project[] = [
       {
         name: "Docker Compose",
         role: "Deployment / data separation",
-        reason: "Public standard documents are baked into the image, while sensitive TARA data and indexes are mounted from host volumes. This allows image-only updates for deployment without risking data leakage.",
+        reason: "Public standard documents are baked into the image, while internal TARA data and indexes are mounted from host volumes — so a deploy swaps the image without rebuilding the index.",
       },
     ],
     problemSolving: [
       {
         issue:
-          "Queries like 'Explain threat M013-1' returned irrelevant results instead of the exact matching item.",
+          "Overall accuracy looked fine, yet certain queries kept missing — and there was no way to tell which type by intuition. So I first built a 31-question evaluation set from real analyst questions and swept k = 1/3/5/10 to split the scores by category.",
         analysis:
-          "Dense embeddings can't distinguish meaningless codes like 'M013-1' from general words like 'automotive' or 'security.' The reranker made it worse by splitting identifiers into subwords, actually weakening exact matching.",
+          "Split apart, the failures were concentrated in queries that quoted a threat ID or clause number verbatim — 'M013-1', '[RQ-09-01]'. Only 5 of those 10 questions surfaced the correct item at rank 1, and their MRR (0.628) sat below the average of the remaining questions (0.738). Dense embeddings couldn't separate a meaningless code from general vocabulary, and the reranker made it worse by splitting identifiers into subwords, weakening the very exact match that mattered.",
         solution:
-          "Combined dense (0.7) + sparse (0.3) scores to reinforce exact token matching, and added a branch: when an ID pattern (M013-1, ISO 15.4, etc.) is detected, bypass the reranker and boost sparse exact matches instead. The key insight was abandoning the assumption that all queries should go through the same pipeline.",
+          "Combined dense (0.7) + sparse (0.3) scores to reinforce exact token matching, and added a branch: when an ID pattern is detected, bypass the reranker, force chunks containing that ID into the candidate set, and boost the score when the identifier appears verbatim in the source. The key insight was abandoning the assumption that all queries should go through the same pipeline.",
         result:
-          "Identifier queries now reliably surface the correct item at the top, while general queries still benefit from the reranker for relevance.",
+          "Re-run against the same evaluation set, queries answered correctly at rank 1 went from 18 to 21, MRR from 0.703 to 0.785, and nDCG@5 from 0.604 to 0.707. Hit rate within the top 5 barely moved — because the problem was never 'not finding it,' it was 'ranking it too low.' Without deciding in advance which metric the improvement should show up in, this change would have been invisible.",
       },
       {
         issue:
@@ -168,19 +168,19 @@ export const projects: Project[] = [
         analysis:
           "FastAPI is async, but inference libraries are synchronous. Calling them directly inside async functions blocks the entire event loop.",
         solution:
-          "Delegated all blocking calls to a thread pool via asyncio.to_thread. Also designed tAIRA integration to gracefully degrade with empty context on RAG failure — RAG is an auxiliary tool and should never block tAIRA's core analysis flow.",
+          "Delegated all blocking calls to a thread pool via asyncio.to_thread, then split the concurrency limit by workload — 4 for retrieval, 2 for generation. The draft had them behind a single semaphore, but retrieval is light and generation is heavy, and sharing one limit makes cheap retrievals queue behind expensive inference. I also designed tAIRA integration to gracefully degrade with empty context on RAG failure — RAG is an auxiliary tool and should never block tAIRA's core analysis flow.",
         result:
-          "Event-loop blocking under concurrent queries disappeared, and tAIRA's TARA analysis continues uninterrupted even when RAG fails.",
+          "Event-loop blocking under concurrent queries disappeared, and tAIRA's TARA analysis continues uninterrupted even when RAG fails. Latency at k=5 measured 369ms mean / 303ms p50 / 455ms p95, and the measurement also showed that first-call warm-up dominates the cost.",
       },
     ],
     retrospective:
-      "The company is an automotive cybersecurity consultancy, not a software organization, so I built this system alone from scoping through deployment. Writing a RAG pipeline with no one to review the code and no one to argue the design with was the real constraint. I worked with AI as a pair programmer and filled the missing reviewer's seat with test code instead.\n\nI pinned down tests for how retrieval shifts when the chunk size changes, whether identifier queries actually route into the hybrid branch, and whether concurrent requests ever cross responses — and once implementation was handed off, I ran the tests first, every time. When nobody else is reading your code, what you have already verified is the only reason to trust it. What I regret is that the verification stopped at behavior. I never built retrieval-quality metrics like recall@k, so every parameter change still came down to a judgment call about whether it was an improvement or a regression.\n\nAt the same time, the limits of what AI could do for me were obvious. Why dense embeddings alone can't retrieve an identifier like M013-1, why the cross-encoder had to be capped at the top 20 rather than applied to everything — those calls were only available to me because I understood the problem. AI turned my decisions into code quickly; it never made the decisions. Building at this scale alone was possible because of AI, but what made it actually run was leaving a reason and a test behind every choice.",
+      "The company is an automotive cybersecurity consultancy, not a software organization, so I built this system alone from scoping through deployment. Writing a RAG pipeline with no one to review the code and no one to argue the design with was the real constraint. I worked with AI as a pair programmer and filled the missing reviewer's seat with test code instead.\n\nI pinned down tests for how retrieval shifts when the chunk size changes, whether identifier queries actually route into the hybrid branch, and whether concurrent requests ever cross responses — and once implementation was handed off, I ran the tests first, every time. When nobody else is reading your code, what you have already verified is the only reason to trust it.\n\nSo the first thing I built was not a feature but the evaluation set. Thirty-one real questions with their correct documents attached, scored on Precision@5, MRR, nDCG, and Hit@k across k values, so every parameter change could be confirmed as an improvement or a regression in numbers rather than intuition. Having metrics did not hand me the interpretation, though. Recall@5 came out at 0.25, which was not a performance problem but a definitional one — several chunks are relevant to a single gold answer and k=5 cuts them off, and at k=10 it becomes 0.42. Deciding which metric to treat as primary turned out to be part of designing the evaluation, not something the numbers decide for you.\n\nAt the same time, the limits of what AI could do for me were obvious. Why dense embeddings alone can't retrieve an identifier like M013-1, why the cross-encoder had to be capped at the top 20 rather than applied to everything — those calls were only available to me because I understood the problem. AI turned my decisions into code quickly; it never made the decisions. Building at this scale alone was possible because of AI, but what made it actually run was leaving a reason and a test behind every choice.",
     links: {},
   },
   {
     category: "infrastructure",
     title: "EKS · Central VPC Infrastructure",
-    period: "Feb 2026 – Mar 2026",
+    period: "Dec 2025 – Feb 2026",
     overview: {
       description:
         "Started from the desire to design a Kubernetes platform that could actually handle production-level traffic. Built an EKS-based application platform and Central VPC centralized operations network, then validated the architecture with 1,700 RPS and 100K total requests in QA.",
@@ -189,7 +189,7 @@ export const projects: Project[] = [
     architecture: {
       diagram: "/images/aws_cj_infra.png",
       description:
-        "Five environments — Prod / QA / Dev / DR / Central VPC. Prod and QA run CloudFront → ALB (Ingress) → EKS Pod across multiple AZs. Data layer uses Aurora + RDS Proxy. Central VPC consolidates GitLab, monitoring, and DNS security observability.",
+        "Five environments were designed — Prod / QA / Dev / DR / Central VPC — and QA was built out as the live cluster, running CloudFront → ALB (Ingress) → Service → Pod across multiple AZs. Prod was taken as far as a Terraform definition of the same topology. The data layer uses Aurora + RDS Proxy, and the Central VPC consolidates GitLab, the monitoring stack, and DNS security observability, connected to each environment through a Transit Gateway hub-and-spoke.",
       reasoning:
         "I considered ECS but wanted fine-grained autoscaling control via open-source tools like KEDA and Karpenter, plus consistent Helm-based config management across environments — so EKS was the better fit. Central VPC wasn't in the original design; I added it after realizing that setting up monitoring separately per environment scattered alerts and made it impossible to see the whole picture. DR used Pilot Light because Active-Active was beyond budget — maintaining minimal resources in standby and scaling up on failure was the cost-recovery tradeoff.",
     },
@@ -208,12 +208,12 @@ export const projects: Project[] = [
       {
         name: "KEDA",
         role: "Request-based Pod autoscaling",
-        reason: "HPA's CPU-based scaling had poor correlation with actual user traffic. Scaling by average RPS per Pod from Prometheus metrics responds to real load, and pre-scaling 45 Pods absorbed cold start issues.",
+        reason: "What this backend does is queue lookups and cache/queue calls — almost entirely network I/O wait. Requests can pile up and latency can climb while threads sit blocked, so CPU never registers the load; and once CPU saturates, a 2x and a 10x surge read identically, so you cannot tell how much more capacity you need. Rather than tuning a threshold, I argued the team into changing the signal itself to request count. Pod-level RPS comes from Prometheus into a KEDA trigger targeting 40 rps per Pod, with min 45 and max 110. The actuator paths are excluded so health checks don't inflate the metric, and the denominator is floored so a moment with zero ready Pods never divides by zero.",
       },
       {
         name: "Karpenter",
         role: "Node-level autoscaling",
-        reason: "Even if KEDA scales Pods, they go Pending without enough nodes. Cluster Autoscaler was too slow; Karpenter detects Pending Pods and provisions right-sized nodes quickly, keeping Pod and node scaling in sync.",
+        reason: "Even if KEDA scales Pods, they go Pending without nodes to land on. Cluster Autoscaler adjusts the count of a predefined node group, so it grows the same instance type regardless of what the pending workload actually needs. Karpenter reads the Pending Pods' requests directly and provisions right-sized nodes, and with the instance families left open it can take whichever Spot capacity is available at that moment — a better fit for burst capacity. The base node group stayed fixed on m6i.2xlarge for stability, with only the added capacity opened up to Spot across the c/m/t families.",
       },
       {
         name: "ArgoCD / GitOps",
@@ -229,13 +229,13 @@ export const projects: Project[] = [
     problemSolving: [
       {
         issue:
-          "During load testing, Spring Boot Pods received traffic before boot completed, HPA scaling lagged behind traffic increases, and Pods went Pending when nodes were insufficient.",
+          "Requests to the ALB came back 404, even though the Pods were Running with no sign of having died.",
         analysis:
-          "Spring Boot takes 10–15 seconds to boot, but Pods were registered to the service immediately without a readiness probe. HPA used CPU metrics, so its reaction timing diverged from actual request volume. Pod scaling without node scaling created a compounding problem.",
+          "The ALB health check path was set to '/', and Spring doesn't return 200 there — so the ALB was marking perfectly healthy Pods as dead targets. The same root cause had a second symptom: Spring Boot takes 10–15 seconds to boot, and without separated probes, traffic reaches Pods that aren't ready yet. Kubernetes and the ALB were reading two different definitions of 'ready.'",
         solution:
-          "Separated startup/readiness/liveness probes to block traffic before boot completes. Switched to KEDA with average RPS per Pod scaling, pre-scaled 45 Pods for initial load absorption, and added Karpenter for automatic node provisioning on Pending — aligning Pod and node scaling timing.",
+          "Separated startup, readiness, and liveness probes — startup allows 5s × 60 attempts, guaranteeing up to 300 seconds of boot time — and pointed the ALB health check at the same readiness endpoint so both layers judge by one standard. Scaling moved to per-Pod request count via KEDA, and because an event opening is a vertical spike that can't wait on scheduling and JVM warm-up, 45 Pods are pre-provisioned as the first line of defense with KEDA and Karpenter as the second. Scale-down uses a 600-second cooldown, deliberately asymmetric against how fast it scales up.",
         result:
-          "Sustained ~1,700 RPS for 60 seconds in QA, processing 100,000 requests with zero downtime.",
+          "Sustained ~1,700 RPS for 60 seconds in QA, processing 100,000 requests with zero downtime. That said, starting at min 45 meant the scale-out path itself never got its own test scenario — I would run a separate ramp-up test from a lower minimum if I did it again.",
       },
       {
         issue:
@@ -243,9 +243,19 @@ export const projects: Project[] = [
         analysis:
           "I initially assumed it was a node-level issue, but the actual cause was that Private Subnet routing tables weren't going through the NAT Gateway, so nodes couldn't reach the control plane. A network configuration error, not a compute one.",
         solution:
-          "Fixed subnet routing and DNS settings, and also adjusted MaxPods limits per instance type. After this experience, I created an EKS network checklist to prevent the same mistake when adding new environments.",
+          "I suspected IAM first, but WorkerNodePolicy was already attached — and a permissions problem would show the node joining and then going NotReady, not disappearing entirely. So I moved down to the network layer, confirmed the NAT Gateway placement, then found and fixed the wrong route in the routing table. The same symptom later reappeared in a new environment from a missing DNS setting: the API endpoint failed to resolve, so kubelet couldn't reach the control plane at all. After this I wrote an EKS network checklist so new environments get checked in that same order.",
         result:
-          "Node join issues were resolved and Karpenter-based autoscaling operated stably.",
+          "Node join was resolved, and more usefully I came away with an ordering — narrow by which layer the path broke at, not by what the symptom looks like.",
+      },
+      {
+        issue:
+          "Monitoring agent and ArgoCD Pods sat in Pending even though the node had CPU and memory to spare.",
+        analysis:
+          "Opening Allocatable alongside the non-terminated Pod list showed the shortage wasn't compute — it was Pod slots. The VPC CNI assigns Pod IPs from ENIs, and on that instance type the per-node Pod ceiling was capped at 17. I had been thinking about capacity purely in terms of CPU and memory.",
+        solution:
+          "I first reclaimed slots by clearing unused Pods, then disabled the ENI-based auto-calculation via a bootstrap option so kubelet's own default applied, lifting the ceiling. That only raises the kubelet limit, though — the VPC CNI still supplies the actual IPs, so the ENI constraint remains. The real fix is prefix delegation to raise IP density; at the time securing slots was urgent, so the bootstrap option came first.",
+        result:
+          "Pending cleared, and I learned to read node capacity as what's left for the application after DaemonSets and system components, not as the instance's spec sheet.",
       },
     ],
     retrospective:
