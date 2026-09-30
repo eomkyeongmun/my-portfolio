@@ -58,9 +58,9 @@
   <!-- ===== User ===== -->
   <rect x="580" y="16" width="80" height="30" rx="6" fill="none"/>
   <!-- User icon above Nginx pointing down -->
-  <circle cx="200" cy="260" r="22" fill="#f0fdfa" stroke="#0d9488" stroke-width="2.5"/>
-  <text x="200" y="267" text-anchor="middle" font-size="18" font-weight="700" fill="#0d9488">User</text>
-  <path d="M222,260 L340,260" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="200" cy="260" r="28" fill="#f0fdfa" stroke="#0d9488" stroke-width="2.5"/>
+  <text x="200" y="266" text-anchor="middle" font-size="16" font-weight="700" fill="#0d9488">User</text>
+  <path d="M228,260 L340,260" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arrow)"/>
   <path d="M200,282 L200,310" stroke="none"/>
 
   <!-- ===== S3 Backup Flow (right side) ===== -->
