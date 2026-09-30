@@ -1,7 +1,6 @@
 export interface TechStack {
   name: string;
-  role: string;
-  reason: string; // 핵심 원칙: "어떤 대안들이 있었고, 왜 이 기술을 선택했는가?"에 대한 답
+  role: string; // 이 프로젝트에서 맡은 역할 한 줄. 선택 근거는 architecture.reasoning에 쓴다.
 }
 
 export interface ProblemSolving {
@@ -58,44 +57,30 @@ export const projects: Project[] = [
       {
         name: "Spring Boot / JPA / QueryDSL",
         role: "REST API, 도메인 로직, 동적 쿼리",
-        reason:
-          "15개 엔티티 간 관계가 복잡하고(그룹-멤버십-이력서-평가 등 다대다 관계가 많았습니다), 모집 게시판 필터링처럼 조건이 동적으로 바뀌는 쿼리가 많아서 QueryDSL로 타입 안전하게 작성하는 게 유지보수에 유리했습니다.",
       },
       {
         name: "Docker Compose + PostgreSQL",
         role: "애플리케이션 실행 환경 + 데이터 저장",
-        reason:
-          "RDS를 쓰면 편하지만 월 비용이 EC2 요금과 맞먹었습니다. 개인 프로젝트에서 관리형 DB의 자동 백업·페일오버가 정말 필요한지 따져보니, Docker PostgreSQL + S3 백업이면 충분했습니다. 관리 부담은 늘었지만 상시 비용은 EC2 한 대로 고정됐습니다.",
       },
       {
         name: "Spring Batch + S3",
         role: "일일 DB 백업 자동화",
-        reason:
-          "cron + 쉘 스크립트로도 할 수 있었지만, 백업 실패 시 재시도·알림·이력 추적이 필요했습니다. Spring Batch의 Job/Step 구조가 pg_dump → S3 업로드 → 로컬 정리 3단계를 명확하게 분리해줬고, JobParameters로 중복 실행 방지까지 얻었습니다.",
       },
       {
         name: "Bedrock Claude Haiku + Logback",
         role: "에러 자동 분석 및 알림",
-        reason:
-          "에러 로그를 그대로 메일로 받으면 '이게 긴급한 건지, 무시해도 되는 건지' 판단이 매번 필요했습니다. Haiku 모델로 원인 분석·심각도 판단을 자동화해 그 판단 자체를 대신하게 했고, 대신 컨텍스트 50줄 제한·10분 중복 쿨다운·async 스레드풀 3개 상한을 걸어 비용이 통제 밖으로 나가지 않게 했습니다.",
       },
       {
         name: "Terraform",
         role: "AWS 인프라 전체 IaC",
-        reason:
-          "EC2·S3·Security Group·CloudWatch 알람 등 리소스가 10개가 넘으니, 콘솔에서 하나씩 만들다 보면 '이 보안 그룹 규칙이 왜 열려 있지?'를 추적할 수 없었습니다. 코드로 정의하면 변경 이력이 남고, 필요하면 환경을 통째로 재현할 수 있습니다.",
       },
       {
         name: "Flyway",
         role: "DB 스키마 버전 관리",
-        reason:
-          "초기에는 ddl-auto=update로 스키마를 자동 반영했습니다. 개발 속도는 빨랐지만, 이 방식은 '지금 운영 DB가 어떤 상태인지'를 코드 어디에서도 알 수 없게 만듭니다. 컬럼을 지워도 반영되지 않고, 되돌릴 수도 없고, 리뷰할 대상도 남지 않습니다. Flyway로 옮기면서 스키마 변경을 코드 리뷰 대상인 SQL 파일로 만들고, JPA는 ddl-auto=validate로 '엔티티와 실제 스키마가 어긋나면 기동을 실패시키는' 역할만 맡겼습니다. 런타임에 '컬럼 없음' 오류가 나는 것보다 배포 시점에 실패하는 편이 훨씬 낫다고 판단했습니다.",
       },
       {
         name: "Claude Code (Remote Control)",
         role: "서버 상주 AI 원격관제 에이전트",
-        reason:
-          "장애 알림 메일을 받아도 PC 앞이 아니면 대응이 늦어지는 게 불편했습니다. SSH를 상시로 열어 폰에서 접속하는 방식은 이 프로젝트가 평소 22번 포트를 차단해두는 보안 설계와 정면으로 충돌해서, 서버가 outbound 연결만 유지하고 폰도 같은 방식으로 중계받는 remote-control을 택했습니다. 배포 권한은 주지 않고 git push까지만 하도록 제한해 기존 CD 파이프라인의 빌드·헬스체크·롤백 안전장치를 그대로 유지했습니다.",
       },
     ],
     problemSolving: [
@@ -160,32 +145,26 @@ export const projects: Project[] = [
       {
         name: "BGE-M3",
         role: "dense+sparse 임베딩",
-        reason: "dense 모델과 sparse 모델을 따로 운영하면 파이프라인이 복잡해지는데, BGE-M3는 한 번의 인코딩으로 두 벡터를 모두 뽑아줘서 구조를 단순하게 가져갈 수 있었습니다.",
       },
       {
         name: "FAISS",
         role: "벡터 인덱스·후보 검색",
-        reason: "Milvus나 Weaviate 같은 벡터DB도 검토했지만, 인덱스가 1,680청크 규모라 별도 서버를 띄우는 건 과한 판단이었습니다. 파일 기반 FAISS로 충분했고 배포도 간단했습니다.",
       },
       {
         name: "Cross-Encoder Reranker",
         role: "후보 재정렬",
-        reason: "1차 검색 결과의 순위가 만족스럽지 않았는데, cross-encoder로 질문과 청크를 함께 보면 관련도 판단이 훨씬 정확해졌습니다. 다만 전체에 적용하면 너무 느려서 상위 20개로 제한했습니다.",
       },
       {
         name: "Ollama (qwen2.5)",
         role: "한국어 답변 생성·평가 judge",
-        reason: "한국어 답변 품질을 기준으로 qwen2.5 계열을 택했고, 로컬에서 돌렸습니다. 생성은 경량 모델(3b)로 두고 답변을 채점하는 judge만 32b로 분리했는데, 생성 모델이 자기 답을 평가하면 점수가 후해져 개선 여부를 판단할 수 없기 때문입니다. 생성 모델을 작게 가져간 대신 근거 품질로 메워야 했고, 그래서 재정렬로 상위 5개만 컨텍스트에 넣는 구조가 선택이 아니라 전제였습니다.",
       },
       {
         name: "FastAPI",
         role: "질의 API·tAIRA 연동",
-        reason: "tAIRA가 Python 기반이라 같은 언어로 연동하는 게 자연스러웠고, 추론 호출이 전부 동기 블로킹이라 asyncio.to_thread로 스레드풀에 넘기는 전략을 쓰기 위해 async 프레임워크가 필요했습니다.",
       },
       {
         name: "Docker Compose",
         role: "배포·데이터 분리",
-        reason: "공개 표준 문서는 이미지에 번들링하고, 사내 TARA 데이터와 인덱스는 호스트 볼륨으로 분리했습니다. 인덱스를 다시 만들지 않고 이미지만 교체해 배포할 수 있게 하려는 구조였습니다.",
       },
     ],
     problemSolving: [
@@ -234,32 +213,26 @@ export const projects: Project[] = [
       {
         name: "Terraform",
         role: "인프라 프로비저닝·DR 재현성",
-        reason: "5개 환경을 콘솔에서 수동으로 맞추면 실수가 반복될 게 뻔했고, 특히 DR 환경은 평소에 안 쓰다가 장애 시 재현해야 하므로 코드로 정의하지 않으면 의미가 없다고 판단했습니다.",
       },
       {
         name: "AWS EKS",
         role: "애플리케이션 실행·오케스트레이션",
-        reason: "ECS와 고민했지만, KEDA로 RPS 기반 스케일링을 하고 Karpenter로 노드까지 자동 확장하려면 쿠버네티스 생태계가 필요했습니다. '트래픽이 올라갈 때 Pod만이 아니라 노드까지 같이 늘어나는 구조'를 만들고 싶었습니다.",
       },
       {
         name: "KEDA",
         role: "요청량 기반 Pod 오토스케일링",
-        reason: "이 백엔드가 하는 일은 대기열 조회와 캐시·큐 호출이라 대부분이 네트워크 I/O 대기입니다. 요청이 쌓여 지연이 올라가도 스레드는 기다리고만 있어 CPU에는 부하 신호가 잘 잡히지 않고, CPU가 포화되면 부하가 2배든 10배든 같은 값이라 얼마나 더 필요한지도 알 수 없습니다. 그래서 임계값을 조정하는 대신 기준 지표 자체를 요청 수로 바꾸자고 팀을 설득했습니다. Prometheus에서 Pod당 초당 요청 수를 뽑아 KEDA 트리거로 걸고 Pod당 40 rps를 목표로, 최소 45·최대 110으로 잡았습니다. 헬스체크 호출이 지표를 부풀리지 않게 actuator 경로를 제외하고, Ready Pod가 0일 때 0으로 나누지 않도록 분모에 하한을 뒀습니다.",
       },
       {
         name: "Karpenter",
         role: "노드 레벨 오토스케일링",
-        reason: "KEDA가 Pod를 늘려도 그 Pod를 올릴 노드가 없으면 결국 Pending입니다. Cluster Autoscaler는 미리 정의한 노드그룹의 개수를 조절하는 방식이라 어떤 사양이 필요한지와 무관하게 같은 타입만 늘어납니다. Karpenter는 Pending Pod의 requests를 직접 보고 필요한 사양의 노드를 만들고, 인스턴스 패밀리를 열어두면 그때 가용한 Spot을 골라 띄울 수 있어 증설 쪽에 맞다고 판단했습니다. 기본 노드그룹은 m6i.2xlarge로 고정해 안정성을 확보하고, 증설분만 Spot + c/m/t 패밀리로 폭을 넓혔습니다.",
       },
       {
         name: "ArgoCD / GitOps",
         role: "선언형 배포 상태 관리",
-        reason: "kubectl apply를 직접 치면 '지금 운영 환경이 Git과 같은 상태인지' 확신할 수 없었습니다. Git을 단일 소스로 삼아 배포 상태와 이력을 추적할 수 있어야 5개 환경을 관리할 수 있다고 판단했습니다.",
       },
       {
         name: "IRSA",
         role: "Pod 단위 AWS 권한 분리",
-        reason: "노드에 IAM Role을 붙이면 그 노드 위의 모든 Pod가 같은 권한을 갖게 됩니다. Pod마다 필요한 권한만 ServiceAccount에 매핑해 보안 범위를 최소화하고 싶었습니다.",
       },
     ],
     problemSolving: [
@@ -321,32 +294,26 @@ export const projects: Project[] = [
       {
         name: "AWS S3 + CloudFront + OAC",
         role: "정적 파일 저장·글로벌 CDN",
-        reason: "S3를 퍼블릭으로 여는 건 보안상 꺼려져서, OAC로 CloudFront를 통해서만 접근하도록 제한했습니다. 포트폴리오에 글로벌 CDN까지 필요할까 싶지만, CloudFront의 캐싱과 HTTPS 처리가 편해서 함께 적용했습니다.",
       },
       {
         name: "AWS Lambda + Puppeteer (컨테이너)",
         role: "서버리스 PDF 생성",
-        reason: "브라우저 인쇄(window.print())로도 PDF는 나오지만, 결과물이 기기마다 달라집니다. 여백·페이지 나눔·배경 그래픽 포함 여부를 사용자가 인쇄 대화상자에서 직접 맞춰야 하고, 특히 폰에서는 브라우저마다 결과가 제각각이라 통제가 안 됩니다. 이력서 성격의 문서라 '누가 어디서 받아도 같은 PDF'가 필요했고, 그러려면 렌더링 주체를 클라이언트에서 서버로 옮겨야 했습니다. 고정된 Chromium 버전과 폰트, 고정된 인쇄 옵션으로 서버가 생성하면 결과가 한 가지로 수렴합니다. 구현에서는 Puppeteer의 Chromium 바이너리가 250MB 이상이라 ZIP 패키징 Lambda의 크기 제한(50MB)을 넘겼고, 컨테이너 이미지 Lambda로 전환해 해결했습니다. 요청이 하루 몇 건 수준이라 상시 서버보다 비용이 훨씬 낮았습니다.",
       },
       {
         name: "AWS API Gateway",
         role: "Lambda 호출 HTTP 엔드포인트",
-        reason: "Lambda를 직접 URL로 노출할 수도 있지만, 나중에 인증이나 요청 제한을 추가할 때 API Gateway가 있어야 유연합니다. X-Ray 추적도 여기서 켜면 바로 되는 점이 좋았습니다.",
       },
       {
         name: "Amazon EventBridge + SES",
         role: "피드백 이벤트 처리·이메일 알림",
-        reason: "피드백 수신 Lambda가 직접 이메일을 보내면 간단하지만, Slack 알림이나 DB 저장을 나중에 추가하려면 그때마다 Lambda 코드를 수정해야 합니다. EventBridge로 이벤트를 발행하면 소비자를 Rule로만 추가할 수 있어 확장이 자유로워집니다.",
       },
       {
         name: "Terraform",
         role: "전체 인프라 IaC",
-        reason: "CloudFront·S3·WAF·Lambda 등 리소스가 10개가 넘으니 콘솔에서 수동으로 관리하면 '이거 왜 이렇게 설정돼 있지?'가 반복될 게 뻔했습니다. 코드로 정의하면 설정 의도가 히스토리에 남고, 환경을 통째로 재현할 수 있습니다.",
       },
       {
         name: "GitHub Actions",
         role: "프론트·Lambda 배포 자동화",
-        reason: "매번 빌드 → S3 업로드 → 캐시 무효화를 수동으로 하다 보면 빠트리는 단계가 생겼습니다. push 한 번이면 전체가 돌아가도록 자동화하니 배포 실수가 완전히 사라졌습니다.",
       },
     ],
     problemSolving: [

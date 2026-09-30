@@ -99,9 +99,8 @@ export function PortfolioDoc({ data, company, lang }: Props) {
             <View style={s.borderedBlock}>
               {proj.techStack.map((t, j) => (
                 <View key={j} style={{ flexDirection: "row", marginBottom: 4, gap: 8 }}>
-                  <Text style={[s.bold, { width: 100, fontSize: 8.5 }]}>{t.name}</Text>
-                  <Text style={[s.faint, { width: 120 }]}>{t.role}</Text>
-                  <Text style={[s.muted, { flex: 1 }]}>{t.reason}</Text>
+                  <Text style={[s.bold, { width: 160, fontSize: 8.5 }]}>{t.name}</Text>
+                  <Text style={[s.faint, { flex: 1 }]}>{t.role}</Text>
                 </View>
               ))}
             </View>

@@ -124,17 +124,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       {/* ── Tech Stack ───────────────────────────────────── */}
       <section>
         <SectionTitle>기술 스택</SectionTitle>
-        <div className="space-y-3">
+        <ul className="grid gap-2 sm:grid-cols-2">
           {project.techStack.map((tech) => (
-            <div key={tech.name} className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 border-l-4 border-l-neutral-300 dark:border-l-neutral-600">
-              <div className="flex flex-wrap items-baseline gap-2 mb-1.5">
-                <span className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{tech.name}</span>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">{tech.role}</span>
-              </div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{tech.reason}</p>
-            </div>
+            <li key={tech.name} className="px-3.5 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
+              <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{tech.name}</p>
+              <p className="text-xs mt-0.5 text-neutral-500 dark:text-neutral-400">{tech.role}</p>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* ── Problem Solving ──────────────────────────────── */}

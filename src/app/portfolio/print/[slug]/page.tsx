@@ -82,17 +82,15 @@ export default async function PrintPage({ params }: { params: Promise<{ slug: st
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-neutral-200">
-                <th scope="col" className="text-left py-2 pr-4 font-semibold text-neutral-600 w-32">기술</th>
-                <th scope="col" className="text-left py-2 pr-4 font-semibold text-neutral-600 w-44">역할</th>
-                <th scope="col" className="text-left py-2 font-semibold text-neutral-600">선택 이유</th>
+                <th scope="col" className="text-left py-2 pr-4 font-semibold text-neutral-600 w-56">기술</th>
+                <th scope="col" className="text-left py-2 font-semibold text-neutral-600">역할</th>
               </tr>
             </thead>
             <tbody>
               {project.techStack.map((tech) => (
                 <tr key={tech.name} className="border-b border-neutral-100">
                   <td className="py-2 pr-4 font-medium text-neutral-800 align-top">{tech.name}</td>
-                  <td className="py-2 pr-4 text-neutral-600 align-top">{tech.role}</td>
-                  <td className="py-2 text-neutral-600 align-top">{tech.reason}</td>
+                  <td className="py-2 text-neutral-600 align-top">{tech.role}</td>
                 </tr>
               ))}
             </tbody>

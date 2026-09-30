@@ -21,44 +21,30 @@ export const projects: Project[] = [
       {
         name: "Spring Boot / JPA / QueryDSL",
         role: "REST API, domain logic, dynamic queries",
-        reason:
-          "With 15 entities and complex relationships (groups, memberships, resumes, evaluations — lots of many-to-many), and dynamic filtering on the recruitment board, QueryDSL's type-safe query building made long-term maintenance far easier than string-based JPQL.",
       },
       {
         name: "Docker Compose + PostgreSQL",
         role: "Application runtime + data storage",
-        reason:
-          "RDS would have been convenient, but its monthly cost nearly matched the EC2 bill. When I honestly evaluated whether a personal project needs managed DB features like automatic backups and failover, the answer was no — Docker PostgreSQL plus S3 backups was sufficient. More operational overhead, but the standing cost stays fixed at a single EC2 instance.",
       },
       {
         name: "Spring Batch + S3",
         role: "Daily DB backup automation",
-        reason:
-          "A cron job with a shell script could have done it, but I needed retry on failure, alerting, and execution history tracking. Spring Batch's Job/Step structure cleanly separated the three stages — pg_dump, S3 upload, local cleanup — and JobParameters prevented duplicate runs for free.",
       },
       {
         name: "Bedrock Claude Haiku + Logback",
         role: "Automated error analysis and alerting",
-        reason:
-          "Receiving raw error logs by email meant I had to judge 'is this urgent or ignorable?' every time. Haiku takes over that judgment call — root-cause analysis and severity assessment — and in exchange I capped context at 50 lines, added a 10-minute dedup cooldown, and limited the async thread pool to 3, so the cost of running it stays bounded.",
       },
       {
         name: "Terraform",
         role: "Full AWS infrastructure as code",
-        reason:
-          "With 10+ resources (EC2, S3, Security Groups, CloudWatch alarms...), managing them through the console would inevitably lead to 'why is this security group rule open?' Code preserves intent in version history and makes the entire environment reproducible.",
       },
       {
         name: "Flyway",
         role: "Database schema version control",
-        reason:
-          "I started with ddl-auto=update. It was fast to develop against, but it leaves you unable to answer 'what state is production actually in?' from the code. Dropped columns never get applied, nothing is reversible, and there is nothing to review. Moving to Flyway turned schema changes into SQL files that go through code review, and left JPA with a single job via ddl-auto=validate: fail startup when entities and the real schema diverge. Failing at deploy time is far better than discovering a missing column at runtime.",
       },
       {
         name: "Claude Code (Remote Control)",
         role: "AI agent resident on the server for remote ops",
-        reason:
-          "Getting an incident email at night was useless if I wasn't at my computer to act on it. Leaving SSH open around the clock for phone access would have broken this server's security model, which closes port 22 by default. Remote-control keeps only an outbound connection alive, and I withheld deploy rights from it — it can commit and git push, nothing more — so the existing CD pipeline's build, health check, and rollback safeguards stay exactly as they were.",
       },
     ],
     problemSolving: [
@@ -123,32 +109,26 @@ export const projects: Project[] = [
       {
         name: "BGE-M3",
         role: "Dense + sparse embeddings",
-        reason: "Running separate dense and sparse models would have complicated the pipeline. BGE-M3 produces both vectors in a single pass, keeping the architecture simple.",
       },
       {
         name: "FAISS",
         role: "Vector index / candidate retrieval",
-        reason: "I considered Milvus and Weaviate, but at an index size of 1,680 chunks, spinning up a dedicated vector DB server felt excessive. File-based FAISS was sufficient and simpler to deploy.",
       },
       {
         name: "Cross-Encoder Reranker",
         role: "Candidate reranking",
-        reason: "First-stage retrieval ranking wasn't satisfactory. The cross-encoder evaluates query-chunk pairs together for much more accurate relevance, but it's too slow for all results — so I limited it to the top 20.",
       },
       {
         name: "Ollama (qwen2.5)",
         role: "Korean answer generation / evaluation judge",
-        reason: "I picked the qwen2.5 family on Korean answer quality and ran it locally. Generation stays on a lightweight 3b model while only the judge that scores answers runs at 32b — if the generator grades its own output, the scores drift generous and you can no longer tell an improvement from a regression. Keeping generation small meant the grounding had to carry the quality, which is why reranking down to the top 5 chunks was a premise rather than an optimization.",
       },
       {
         name: "FastAPI",
         role: "Query API / tAIRA integration",
-        reason: "tAIRA is Python-based, so using the same language for integration was natural. Since all inference calls are synchronous blocking, I needed an async framework to delegate them to a thread pool via asyncio.to_thread.",
       },
       {
         name: "Docker Compose",
         role: "Deployment / data separation",
-        reason: "Public standard documents are baked into the image, while internal TARA data and indexes are mounted from host volumes — so a deploy swaps the image without rebuilding the index.",
       },
     ],
     problemSolving: [
@@ -197,33 +177,26 @@ export const projects: Project[] = [
       {
         name: "Terraform",
         role: "Infrastructure provisioning and DR reproducibility",
-        reason:
-          "Managing five environments manually via console would inevitably lead to configuration drift. DR especially needs to be code-defined — if you can't reproduce it reliably, it's useless when you actually need it.",
       },
       {
         name: "AWS EKS",
         role: "Application execution / orchestration",
-        reason: "I debated ECS, but KEDA for RPS-based scaling and Karpenter for automatic node provisioning required the Kubernetes ecosystem. I wanted a structure where 'both Pods and nodes scale together when traffic rises.'",
       },
       {
         name: "KEDA",
         role: "Request-based Pod autoscaling",
-        reason: "What this backend does is queue lookups and cache/queue calls — almost entirely network I/O wait. Requests can pile up and latency can climb while threads sit blocked, so CPU never registers the load; and once CPU saturates, a 2x and a 10x surge read identically, so you cannot tell how much more capacity you need. Rather than tuning a threshold, I argued the team into changing the signal itself to request count. Pod-level RPS comes from Prometheus into a KEDA trigger targeting 40 rps per Pod, with min 45 and max 110. The actuator paths are excluded so health checks don't inflate the metric, and the denominator is floored so a moment with zero ready Pods never divides by zero.",
       },
       {
         name: "Karpenter",
         role: "Node-level autoscaling",
-        reason: "Even if KEDA scales Pods, they go Pending without nodes to land on. Cluster Autoscaler adjusts the count of a predefined node group, so it grows the same instance type regardless of what the pending workload actually needs. Karpenter reads the Pending Pods' requests directly and provisions right-sized nodes, and with the instance families left open it can take whichever Spot capacity is available at that moment — a better fit for burst capacity. The base node group stayed fixed on m6i.2xlarge for stability, with only the added capacity opened up to Spot across the c/m/t families.",
       },
       {
         name: "ArgoCD / GitOps",
         role: "Declarative deployment state",
-        reason: "Running kubectl apply manually makes it impossible to be sure the live environment matches Git. With five environments, Git as the single source of truth for deployment state and history was essential.",
       },
       {
         name: "IRSA",
         role: "Per-Pod AWS permission isolation",
-        reason: "Attaching an IAM Role to a node gives every Pod on that node the same permissions. Mapping only needed permissions per ServiceAccount to each Pod minimizes the blast radius.",
       },
     ],
     problemSolving: [
@@ -286,32 +259,26 @@ export const projects: Project[] = [
       {
         name: "AWS S3 + CloudFront + OAC",
         role: "Static file storage / global CDN",
-        reason: "I was uncomfortable making S3 public, so I restricted access via OAC to CloudFront only. A global CDN might be overkill for a portfolio, but CloudFront's caching and HTTPS handling were convenient enough to include.",
       },
       {
         name: "AWS Lambda + Puppeteer (Container)",
         role: "Serverless PDF generation",
-        reason: "Browser printing (window.print()) produces a PDF too, but the output differs by device. Margins, page breaks, and whether background graphics are included all depend on what the user picks in the print dialog — and on phones the result varies by browser with no way to control it. This is a résumé-style document, so it had to come out identical no matter who downloaded it or where, which meant moving rendering from the client to the server. With a pinned Chromium version, pinned fonts, and fixed print options, the output converges on exactly one result. On the implementation side, Puppeteer's Chromium binary exceeds 250MB and broke the ZIP Lambda size limit (50MB), which the container image Lambda solved. At a few requests per day, it is far cheaper than running a server.",
       },
       {
         name: "AWS API Gateway",
         role: "HTTP endpoint for Lambda",
-        reason: "I could expose Lambda URLs directly, but adding auth or rate limiting later requires API Gateway. X-Ray tracing integrates here with a single toggle.",
       },
       {
         name: "Amazon EventBridge + SES",
         role: "Feedback event processing / email",
-        reason: "If the receiver Lambda sends emails directly, adding Slack or DB storage means modifying Lambda code each time. EventBridge lets me add new consumers with just a Rule — no code changes needed.",
       },
       {
         name: "Terraform",
         role: "Full infrastructure IaC",
-        reason: "With 10+ resources (CloudFront, S3, WAF, Lambda...), manual console management would inevitably lead to 'why is this configured this way?' Defining everything as code preserves intent in version history and makes the entire environment reproducible.",
       },
       {
         name: "GitHub Actions",
         role: "Frontend / Lambda deployment automation",
-        reason: "Manually running build → S3 upload → cache invalidation kept leading to missed steps. Automating the full flow on push eliminated deployment mistakes entirely.",
       },
     ],
     problemSolving: [
