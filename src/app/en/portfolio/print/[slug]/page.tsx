@@ -25,7 +25,7 @@ export default async function PrintPageEn({ params }: { params: Promise<{ slug: 
   if (!project) notFound();
 
   return (
-    <div className="bg-white text-neutral-900 print:text-black font-sans">
+    <div className="justify-body bg-white text-neutral-900 print:text-black font-sans">
       {/* Print button — hidden when printing */}
       <PrintButton />
 

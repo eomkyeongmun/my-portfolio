@@ -34,7 +34,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   if (!project) notFound();
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 space-y-20">
+    <div className="justify-body max-w-3xl mx-auto px-4 sm:px-6 py-16 space-y-20">
 
       {/* ── Back ─────────────────────────────────────────── */}
       <Link
